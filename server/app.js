@@ -12,10 +12,10 @@ app.use(
 );
 app.use(bodyParser.json());
 
-app.use(express.static(path.resolve(__dirname, '../../client/dist/public')));
+app.use(express.static(path.resolve(__dirname, '../public/dist')));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../client/dist/public/index.html'));
+  res.sendFile(path.join(__dirname, '../public/dist/index.html'));
 });
 
-export { app };
+module.exports = app;
