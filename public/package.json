@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@babel/core": "^7.4.5",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "css-loader": "^3.0.0",
     "d3": "^5.9.7",
     "react": "^16.8.6",

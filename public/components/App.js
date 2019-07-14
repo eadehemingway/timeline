@@ -91,6 +91,10 @@ export class App extends React.Component {
       updateLiquid(newData);
     });
   }
+
+  redraw = () => {
+    console.log('asdfasdf');
+  };
   render() {
     return <div id="chart" />;
   }
