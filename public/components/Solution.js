@@ -55,15 +55,16 @@ export class App extends React.Component {
       .attr('y', d => vaseY - d.liquidHeight)
       .attr('fill', d => d.color);
   }
-  componentDidUpdate() {
-    this.redrawLiquid(this.state.data);
-  }
-  redrawLiquid = newData => {
-    const { vaseY } = this.state;
-    const vaseGroups = d3.selectAll('.vase-group');
 
-    vaseGroups.data(newData);
+  componentDidUpdate() {
+    this.redrawLiquid();
+  }
+
+  redrawLiquid = () => {
+    const { vaseY, data } = this.state;
+    const vaseGroups = d3.selectAll('.vase-group');
     vaseGroups
+      .data(data)
       .select('rect.liquid')
       .transition()
       .duration(750)
