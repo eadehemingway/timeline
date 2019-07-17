@@ -1,5 +1,7 @@
 # use d3 with react
 
+![](./vase-gif.gif)
+
 ### the challenge
 
 put all your code in the App.js file.
