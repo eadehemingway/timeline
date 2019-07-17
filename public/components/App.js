@@ -34,15 +34,13 @@ export class App extends React.Component {
       .attr('width', chart_width)
       .attr('height', chart_height);
 
-    const key = d => d.key;
-
     const x_scale = this.calculateXScale();
 
     const y_scale = this.calculateYScale();
 
     svg
       .selectAll('rect')
-      .data(data, key)
+      .data(data, d => d.key)
       .enter()
       .append('rect')
       .attr('x', (d, i) => x_scale(i))
@@ -53,7 +51,6 @@ export class App extends React.Component {
   }
 
   redraw = () => {
-    const key = d => d.key;
     const { data, chart_height } = this.state;
     const x_scale = this.calculateXScale();
     const y_scale = this.calculateYScale();
@@ -61,7 +58,7 @@ export class App extends React.Component {
     const bars = d3
       .select('svg')
       .selectAll('rect')
-      .data(data, key);
+      .data(data, d => d.key);
 
     bars
       .enter()
