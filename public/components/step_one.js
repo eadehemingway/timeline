@@ -29,10 +29,11 @@ export class App extends React.Component {
   componentDidMount() {
     const x_scale = this.calculateXScale();
     const y_scale = this.calculateYScale();
+
     const testX = x_scale(5);
     const testY = y_scale(5);
-
-    console.log('x: ', testX, 'y: ', testY); // should return x: 269 and y: 66.66666666666666
+    console.log('testX should equal 269: ', testX);
+    console.log('testY should equal 66.666666666', testY);
   }
 
   calculateXScale = () => {
