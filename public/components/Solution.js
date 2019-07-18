@@ -27,58 +27,68 @@ export class App extends React.Component {
     };
   }
   componentDidMount() {
-    const { data, chart_width, chart_height } = this.state;
-    const svg = d3
-      .select('#chart')
+    const { chart_width, chart_height } = this.state;
+    d3.select('#chart')
       .append('svg')
       .attr('width', chart_width)
       .attr('height', chart_height);
 
-    const x_scale = this.calculateXScale();
-
-    const y_scale = this.calculateYScale();
-
-    svg
-      .selectAll('rect')
-      .data(data, d => d.key)
-      .enter()
-      .append('rect')
-      .attr('x', (d, i) => x_scale(i))
-      .attr('y', d => chart_height - y_scale(d.num))
-      .attr('width', x_scale.bandwidth())
-      .attr('height', d => y_scale(d.num))
-      .attr('fill', 'rgb(185, 204, 255)');
+    this.draw();
   }
 
-  redraw = () => {
+  draw = () => {
     const { data, chart_height } = this.state;
     const x_scale = this.calculateXScale();
     const y_scale = this.calculateYScale();
-    const bars = d3
-      .select('svg')
-      .selectAll('rect')
-      .data(data, d => d.key);
+    const svg = d3.select('svg');
+    const bars = svg.selectAll('rect').data(data, d => d.key);
 
     const enteringBars = bars
       .enter()
       .append('rect')
-      .attr('x', (d, i) => x_scale(i))
+      .attr('x', (_, i) => x_scale(i))
       .attr('y', chart_height)
       .attr('width', x_scale.bandwidth())
       .attr('height', 0)
       .attr('fill', 'LightSteelBlue ');
 
-    const mergedSelection = enteringBars.merge(bars);
+    const mergedBarSelection = enteringBars.merge(bars);
 
-    mergedSelection
+    mergedBarSelection
       .transition()
       .duration(750)
-      .attr('x', (d, i) => x_scale(i))
+      .attr('x', (_, i) => x_scale(i))
       .attr('y', d => chart_height - y_scale(d.num))
       .attr('width', x_scale.bandwidth())
       .attr('height', d => y_scale(d.num));
 
     bars
+      .exit()
+      .transition()
+      .attr('x', -x_scale.bandwidth())
+      .remove();
+
+    const labels = svg.selectAll('text').data(data, d => d.key);
+
+    const enteringLabels = labels
+      .enter()
+      .append('text')
+      .text(d => d.num)
+      .attr('x', (_, i) => x_scale(i) + x_scale.bandwidth() / 2)
+      .attr('y', chart_height)
+      .attr('font-size', '14px')
+      .attr('fill', '#fff')
+      .attr('text-anchor', 'middle');
+
+    const mergedLabelSelection = enteringLabels.merge(labels);
+
+    mergedLabelSelection
+      .transition()
+      .duration(1000)
+      .attr('x', (_, i) => x_scale(i) + x_scale.bandwidth() / 2)
+      .attr('y', d => chart_height - y_scale(d.num) + 15);
+
+    labels
       .exit()
       .transition()
       .attr('x', -x_scale.bandwidth())
@@ -104,18 +114,18 @@ export class App extends React.Component {
 
   addBar = () => {
     const { data } = this.state;
-    const new_num = Math.floor(Math.random() * d3.max(data, d => d.num));
+    const new_num = Math.floor(Math.random() * d3.max(data, d => d.num)) + 1;
     const newData = [
       ...data,
       { key: data[data.length - 1].key + 1, num: new_num }
     ];
-    this.setState({ data: newData }, () => this.redraw());
+    this.setState({ data: newData }, () => this.draw());
   };
 
   removeBar = () => {
     const { data } = this.state;
     const newData = [...data].slice(1);
-    this.setState({ data: newData }, () => this.redraw());
+    this.setState({ data: newData }, () => this.draw());
   };
 
   render() {

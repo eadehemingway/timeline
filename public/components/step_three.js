@@ -37,16 +37,7 @@ export class App extends React.Component {
       .attr('width', chart_width)
       .attr('height', chart_height);
 
-    svg
-      .selectAll('rect')
-      .data(data, d => d.key)
-      .enter()
-      .append('rect')
-      .attr('x', (d, i) => x_scale(i))
-      .attr('y', d => chart_height - y_scale(d.num))
-      .attr('width', x_scale.bandwidth())
-      .attr('height', d => y_scale(d.num))
-      .attr('fill', 'rgb(185, 204, 255)');
+    // this.draw();
   }
 
   calculateXScale = () => {
@@ -65,7 +56,7 @@ export class App extends React.Component {
       .domain([0, d3.max(data, d => d.num)])
       .range([0, chart_height]);
   };
-  redraw = () => {
+  draw = () => {
     // const { data, chart_height } = this.state;
     // const x_scale = this.calculateXScale();
     // const y_scale = this.calculateYScale();
@@ -98,18 +89,18 @@ export class App extends React.Component {
 
   addBar = () => {
     const { data } = this.state;
-    const new_num = Math.floor(Math.random() * d3.max(data, d => d.num));
+    const new_num = Math.floor(Math.random() * d3.max(data, d => d.num)) + 1;
     const newData = [
       ...data,
       { key: data[data.length - 1].key + 1, num: new_num }
     ];
-    this.setState({ data: newData }, () => this.redraw());
+    this.setState({ data: newData }, () => this.draw());
   };
 
   removeBar = () => {
     const { data } = this.state;
     const newData = [...data].slice(1);
-    this.setState({ data: newData }, () => this.redraw());
+    this.setState({ data: newData }, () => this.draw());
   };
   render() {
     return (
