@@ -27,63 +27,27 @@ export class App extends React.Component {
     };
   }
   componentDidMount() {
-    const { data, chart_width, chart_height } = this.state;
-    const svg = d3
-      .select('#chart')
-      .append('svg')
-      .attr('width', chart_width)
-      .attr('height', chart_height);
-
     const x_scale = this.calculateXScale();
-
     const y_scale = this.calculateYScale();
 
-    svg
-      .selectAll('rect')
-      .data(data, d => d.key)
-      .enter()
-      .append('rect')
-      .attr('x', (d, i) => x_scale(i))
-      .attr('y', d => chart_height - y_scale(d.num))
-      .attr('width', x_scale.bandwidth())
-      .attr('height', d => y_scale(d.num))
-      .attr('fill', 'rgb(185, 204, 255)');
+    // const { data, chart_width, chart_height } = this.state;
+    // const svg = d3
+    //   .select('#chart')
+    //   .append('svg')
+    //   .attr('width', chart_width)
+    //   .attr('height', chart_height);
+
+    // svg
+    //   .selectAll('rect')
+    //   .data(data, d => d.key)
+    //   .enter()
+    //   .append('rect')
+    //   .attr('x', (d, i) => x_scale(i))
+    //   .attr('y', d => chart_height - y_scale(d.num))
+    //   .attr('width', x_scale.bandwidth())
+    //   .attr('height', d => y_scale(d.num))
+    //   .attr('fill', 'rgb(185, 204, 255)');
   }
-
-  redraw = () => {
-    const { data, chart_height } = this.state;
-    const x_scale = this.calculateXScale();
-    const y_scale = this.calculateYScale();
-    const bars = d3
-      .select('svg')
-      .selectAll('rect')
-      .data(data, d => d.key);
-
-    const enteringBars = bars
-      .enter()
-      .append('rect')
-      .attr('x', (d, i) => x_scale(i))
-      .attr('y', chart_height)
-      .attr('width', x_scale.bandwidth())
-      .attr('height', 0)
-      .attr('fill', 'LightSteelBlue ');
-
-    const mergedSelection = enteringBars.merge(bars);
-
-    mergedSelection
-      .transition()
-      .duration(750)
-      .attr('x', (d, i) => x_scale(i))
-      .attr('y', d => chart_height - y_scale(d.num))
-      .attr('width', x_scale.bandwidth())
-      .attr('height', d => y_scale(d.num));
-
-    bars
-      .exit()
-      .transition()
-      .attr('x', -x_scale.bandwidth())
-      .remove();
-  };
 
   calculateXScale = () => {
     const { data, chart_width } = this.state;
@@ -101,6 +65,7 @@ export class App extends React.Component {
       .domain([0, d3.max(data, d => d.num)])
       .range([0, chart_height]);
   };
+  redraw = () => {};
 
   addBar = () => {
     const { data } = this.state;
@@ -117,7 +82,6 @@ export class App extends React.Component {
     const newData = [...data].slice(1);
     this.setState({ data: newData }, () => this.redraw());
   };
-
   render() {
     return (
       <div>

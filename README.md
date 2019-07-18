@@ -1,12 +1,16 @@
-# use d3 with react
+# scales workshop
 
-![](./vase-gif.gif)
+### step one
 
-### the challenge
+write all your code in `App.js`. The first task is to write the x and y scale. you will complete the calculateXScale and calculateYScale functions.
 
-put all your code in the App.js file.
-It should have the same functionality as it had before it used react.
-Think about how the what should trigger the update function...
+### step two
+
+in componentDidMount draw a rectangle for each bit of data make the height equal to the num - use the scales to make sure it all fits!
+
+### step three
+
+the add and remove buttons currently add/remove an item of data from the data array. Now we need to write the redraw function so that this is reflected in the graph.
 
 ### to run the app for development
 

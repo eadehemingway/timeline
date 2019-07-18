@@ -35,9 +35,22 @@ export class App extends React.Component {
     console.log('x: ', testX, 'y: ', testY); // should return x: 269 and y: 66.66666666666666
   }
 
-  calculateXScale = () => {};
+  calculateXScale = () => {
+    // const { data, chart_width } = this.state;
+    // return d3
+    //   .scaleBand()
+    //   .domain(d3.range(data.length))
+    //   .rangeRound([0, chart_width])
+    //   .paddingInner(0.05);
+  };
 
-  calculateYScale = () => {};
+  calculateYScale = () => {
+    // const { data, chart_height } = this.state;
+    // return d3
+    //   .scaleLinear()
+    //   .domain([0, d3.max(data, d => d.num)])
+    //   .range([0, chart_height]);
+  };
 
   redraw = () => {};
   addBar = () => {
