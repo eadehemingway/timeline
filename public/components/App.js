@@ -67,7 +67,7 @@ export class App extends React.Component {
       .attr('y', chart_height)
       .attr('width', x_scale.bandwidth())
       .attr('height', 0)
-      .attr('fill', '#7ED26D')
+      .attr('fill', 'LightSteelBlue ')
       .merge(bars)
       .transition()
       .duration(750)
@@ -119,12 +119,19 @@ export class App extends React.Component {
     return (
       <div>
         <div id="chart" />
-        <button type="button" id="add" onClick={this.addBar}>
-          Add
-        </button>
-        <button type="button" id="remove" onClick={this.removeBar}>
-          Remove
-        </button>
+
+        <div className="button-container">
+          <button id="increase" className="increase-btn" onClick={this.addBar}>
+            +
+          </button>
+          <button
+            id="decrease"
+            className="decrease-btn"
+            onClick={this.removeBar}
+          >
+            -
+          </button>
+        </div>
       </div>
     );
   }
