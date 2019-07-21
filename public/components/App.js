@@ -150,30 +150,18 @@ export class App extends React.Component {
 
   move = (num) => {
     this.setState({ timeline_x: this.state.timeline_x + num }, () => {
-      this.update()
+      const { timeline_x } = this.state
+      d3.select('.timelineGroup')
+        .transition()
+        .duration(750)
+        .attr("transform", `translate(${timeline_x} ,0)`)
     })
   }
 
-  zoomIn = () => {
-    this.setState({ zoom_level: this.state.zoom_level + 1 }, () => {
-
-      this.redraw()
-    })
+  zoom = (num) => {
+    this.setState({ zoom_level: this.state.zoom_level + num }, () => this.redraw())
   }
 
-  zoomOut = () => {
-    this.setState({ zoom_level: this.state.zoom_level - 1 }, () => {
-
-      this.redraw()
-    })
-  }
-  update = () => {
-    const { timeline_x } = this.state
-    d3.select('.timelineGroup')
-      .transition()
-      .duration(750)
-      .attr("transform", `translate(${timeline_x} ,0)`)
-  }
   render() {
     return (
       <div>
@@ -181,8 +169,8 @@ export class App extends React.Component {
         <div id="chart" />
         <button onClick={() => this.move(300)}> LEFT ======================== </button>
         <button onClick={() => this.move(-300)}>  RIGHT =================== </button>
-        <button onClick={this.zoomIn}> IN ++++++++++++++++++++++ </button>
-        <button onClick={this.zoomOut}> OUT --------------------- </button>
+        <button onClick={() => this.zoom(1)}> IN ++++++++++++++++++++++ </button>
+        <button onClick={() => this.zoom(-1)}> OUT --------------------- </button>
 
       </div>
     );
