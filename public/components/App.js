@@ -87,7 +87,7 @@ export class App extends React.Component {
       .attr('height', 20)
       .attr('x', d=> leftPadding + scale(d.start_date) - 5)
       .attr('y',d=> d.y - 25 )
-      .attr('fill', 'white')
+      .attr('fill', ' #f7f7f7')
 
       labelGroups
       .append('text')
