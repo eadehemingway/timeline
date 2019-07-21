@@ -7,6 +7,7 @@ export class App extends React.Component {
     this.state = {
       data: [
         {label: "one", start_date: new Date(1992, 0, 0), end_date: new Date(1992, 0, 0)},
+        {label: "close", start_date: new Date(1992, 1, 0), end_date: new Date(1992, 1, 0)},
         {label: "two", start_date: new Date(2001, 0,0), end_date: new Date(2003, 0, 0)},
         {label: "half", start_date: new Date(2001, 0,0), end_date: new Date(2005, 0, 0)},
         {label: "more", start_date: new Date(2001, 0,0), end_date: new Date(2006, 0, 0)},
@@ -22,11 +23,11 @@ export class App extends React.Component {
   const end_dates = data.map(d=> d.end_date)
   const sortedData = data.sort(d=> d.start_date)
   const dataWithYVals = sortedData.reduce((acc, d, i)=> {
-    let y = 150
+    let y = 165
     if (i > 0 ){
     const prevData = acc[i-1]
     const isOverlap = prevData.end_date > d.start_date 
-     y = isOverlap ? prevData.y - 40 : 150
+     y = isOverlap ? prevData.y - 40 : 165
   }
     const newObj = {
       ...d, 
@@ -67,17 +68,32 @@ export class App extends React.Component {
       .append('rect')
       .attr('width', d=> {
         const width = scale(d.end_date) - scale(d.start_date) 
-        return width > 0 ? width : 5
+        return width > 0 ? width : 1
       })
       .attr('height', 10)
       .attr('x', d=> leftPadding + scale(d.start_date))
       .attr('y',d=> d.y)
 
-  eventGroups
+      
+      eventGroups
+      .append('g')
+      .attr('class','labelGroup')
+      
+      const labelGroups = eventGroups.selectAll('.labelGroup')
+
+
+      labelGroups.append('rect')
+      .attr('width', d=> d.label.length * 10)
+      .attr('height', 20)
+      .attr('x', d=> leftPadding + scale(d.start_date) - 5)
+      .attr('y',d=> d.y - 25 )
+      .attr('fill', 'white')
+
+      labelGroups
       .append('text')
       .text(d=> d.label)
       .attr('x', d=> leftPadding + scale(d.start_date))
-      .attr('y',d=> d.y -10)
+      .attr('y',d=> d.y - 10)
   }
 
   
