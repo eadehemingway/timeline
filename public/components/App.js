@@ -14,7 +14,8 @@ export class App extends React.Component {
         {label: "three", start_date: new Date( 2010, 0, 0), end_date: new Date( 2011, 0, 0)}
       ],
       chart_width: 800,
-      chart_height: 400
+      chart_height: 400, 
+      timeline_x: 30
     };
   }
   componentDidMount() {
@@ -44,19 +45,21 @@ export class App extends React.Component {
 
   const scale = d3.scaleLinear()
                 .domain([d3.min(start_dates), d3.max(end_dates)])
-                .range([0, chart_width - 100]);
+                .range([0, chart_width * 3]);
 
   const x_axis = d3.axisBottom()
                 .scale(scale)
                 .ticks(5)
                 .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
-  svg
+  const timelineGroup = svg.append('g').attr('class', 'timelineGroup')
+  timelineGroup
     .append("g")
+    .attr('class', 'axisGroup')
     .attr("transform", `translate(${leftPadding} 180)`)
     .call(x_axis)
 
-  svg.selectAll('.eventGroups')
+    timelineGroup.selectAll('.eventGroups')
     .data(dataWithYVals)
     .enter()
     .append('g')
@@ -96,13 +99,30 @@ export class App extends React.Component {
       .attr('x', d=> leftPadding + scale(d.start_date))
       .attr('y',d=> d.y - 10)
   }
+moveLeft=() => {
+this.setState({timeline_x: this.state.timeline_x +50})
+this.update()
+}
 
-  
+moveRight=() => {
+  this.setState({timeline_x: this.state.timeline_x - 50})
+  this.update()
+}
+
+update = () => {
+  const {timeline_x} = this.state
+  d3.select('.timelineGroup')
+ .attr("transform", `translate(${timeline_x} ,0)`)
+}
   render() {
     return (
+      <div>
+
         <div id="chart" />
+<button onClick={this.moveLeft}>  LEFT =================== </button>
+<button onClick={this.moveRight}> RIGHT ======================== </button>
 
-
+      </div>
     );
   }
 }
