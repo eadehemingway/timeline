@@ -73,6 +73,7 @@ export class App extends React.Component {
       .attr('height', 10)
       .attr('x', d=> leftPadding + scale(d.start_date))
       .attr('y',d=> d.y)
+      .attr('fill', 'LightSteelBlue')
 
       
       eventGroups
