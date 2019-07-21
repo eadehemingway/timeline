@@ -114,13 +114,14 @@ export class App extends React.Component {
     const scale = this.calculateScale()
     const x_axis = d3.axisBottom()
       .scale(scale)
-      // .ticks(3)
       .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
     d3.select('.axisGroup').transition().duration(750)
       .call(x_axis)
 
     d3.selectAll('.eventRects')
+      .transition()
+      .duration(750)
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date)
         return width > 0 ? width : 1
@@ -134,10 +135,14 @@ export class App extends React.Component {
 
 
     labelGroups.select('.textBackground')
+      .transition()
+      .duration(750)
       .attr('x', d => leftPadding + scale(d.start_date) - 5)
 
 
     labelGroups.select('text')
+      .transition()
+      .duration(750)
       .attr('x', d => leftPadding + scale(d.start_date))
 
   }
@@ -162,10 +167,31 @@ export class App extends React.Component {
       <div>
 
         <div id="chart" />
-        <button onClick={() => this.move(300)}> LEFT ======================== </button>
-        <button onClick={() => this.move(-300)}>  RIGHT =================== </button>
-        <button onClick={() => this.zoom(1)}> IN ++++++++++++++++++++++ </button>
-        <button onClick={() => this.zoom(-1)}> OUT --------------------- </button>
+
+
+
+        <div className="button-container">
+          <button id="increase" className="increase-btn" onClick={() => this.zoom(1)}>
+            +
+          </button>
+          <button
+            id="decrease"
+            className="decrease-btn"
+            onClick={() => this.zoom(-1)}
+          >
+            -
+          </button>
+          <button id="increase" className="increase-btn" onClick={() => this.move(300)}>
+            L
+          </button>
+          <button
+            id="decrease"
+            className="decrease-btn"
+            onClick={() => this.move(-300)}
+          >
+            R
+          </button>
+        </div>
 
       </div>
     );
