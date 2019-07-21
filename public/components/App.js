@@ -9,6 +9,7 @@ export class App extends React.Component {
         {label: "one", start_date: new Date(1992, 0, 0), end_date: new Date(1992, 0, 0)},
         {label: "two", start_date: new Date(2001, 0,0), end_date: new Date(2003, 0, 0)},
         {label: "half", start_date: new Date(2001, 0,0), end_date: new Date(2005, 0, 0)},
+        {label: "more", start_date: new Date(2001, 0,0), end_date: new Date(2006, 0, 0)},
         {label: "three", start_date: new Date( 2010, 0, 0), end_date: new Date( 2011, 0, 0)}
       ],
       chart_width: 800,
@@ -20,21 +21,19 @@ export class App extends React.Component {
   const start_dates = data.map(d=> d.start_date)
   const end_dates = data.map(d=> d.end_date)
 
-  const dataWithYVals = data.map((d, i)=> {
+  const dataWithYVals = data.reduce((acc, d, i)=> {
     let y = 150
     if (i > 0 ){
-    const prevData = data[i-1]
+    const prevData = acc[i-1]
     const isOverlap = prevData.end_date > d.start_date 
-
-     y = isOverlap ? 110 : 150
+     y = isOverlap ? prevData.y - 40 : 150
   }
-
-
-    return {
+    const newObj = {
       ...d, 
       y
     }
-  })
+    return [...acc, newObj]
+  }, [])
 
   const leftPadding = 30
   const svg = d3.select("#chart")
