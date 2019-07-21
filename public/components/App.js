@@ -56,7 +56,7 @@ export class App extends React.Component {
     const scale = this.calculateScale()
     const x_axis = d3.axisBottom()
       .scale(scale)
-      .ticks(5)
+      // .ticks(5)
       .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
     const timelineGroup = svg.append('g').attr('class', 'timelineGroup')
@@ -114,19 +114,13 @@ export class App extends React.Component {
     const scale = this.calculateScale()
     const x_axis = d3.axisBottom()
       .scale(scale)
-      .ticks(5)
+      // .ticks(3)
       .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
     d3.select('.axisGroup').transition().duration(750)
       .call(x_axis)
-    const timelineGroup = d3.select('.timelineGroup')
-    timelineGroup
-      .append("g")
-      .attr('class', 'axisGroup')
-      .attr("transform", `translate(${leftPadding} 180)`)
-      .call(x_axis)
 
-    const eventGroups = d3.selectAll('.eventRects')
+    d3.selectAll('.eventRects')
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date)
         return width > 0 ? width : 1
