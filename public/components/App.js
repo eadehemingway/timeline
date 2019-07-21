@@ -20,8 +20,8 @@ export class App extends React.Component {
   const {chart_height, chart_width, data} = this.state
   const start_dates = data.map(d=> d.start_date)
   const end_dates = data.map(d=> d.end_date)
-
-  const dataWithYVals = data.reduce((acc, d, i)=> {
+  const sortedData = data.sort(d=> d.start_date)
+  const dataWithYVals = sortedData.reduce((acc, d, i)=> {
     let y = 150
     if (i > 0 ){
     const prevData = acc[i-1]
