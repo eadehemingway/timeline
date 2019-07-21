@@ -117,7 +117,8 @@ export class App extends React.Component {
       .ticks(5)
       .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
-    d3.select('.axisGroup').remove()
+    d3.select('.axisGroup').transition().duration(750)
+      .call(x_axis)
     const timelineGroup = d3.select('.timelineGroup')
     timelineGroup
       .append("g")
