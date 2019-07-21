@@ -6,75 +6,64 @@ export class App extends React.Component {
     super(props);
     this.state = {
       data: [
-        { key: 0, num: 6 },
-        { key: 1, num: 20 },
-        { key: 2, num: 21 },
-        { key: 3, num: 14 },
-        { key: 4, num: 2 },
-        { key: 5, num: 30 },
-        { key: 6, num: 7 },
-        { key: 7, num: 16 },
-        { key: 8, num: 25 },
-        { key: 9, num: 5 },
-        { key: 10, num: 11 },
-        { key: 11, num: 28 },
-        { key: 12, num: 10 },
-        { key: 13, num: 26 },
-        { key: 14, num: 9 }
+        {label: "one", start_date: 100, end_date: 200},
+        {label: "two", start_date: 400, end_date: 420},
+        {label: "three", start_date: 600, end_date: 650}
       ],
       chart_width: 800,
       chart_height: 400
     };
   }
   componentDidMount() {
-    const x_scale = this.calculateXScale();
-    const y_scale = this.calculateYScale();
+    const {chart_height, chart_width, data} = this.state
+    const start_dates = data.map(d=> d.start_date)
+    const end_dates = data.map(d=> d.end_date)
+    const leftPadding = 30
+    const svg = d3.select("#chart")
+                .append("svg")
+                .attr("width", chart_width)
+                .attr("height", chart_height);
 
-    const testX = x_scale(5);
-    const testY = y_scale(5);
-    console.log('testX should equal 269: ', testX);
-    console.log('testY should equal 66.666666666', testY);
+    const scale = d3.scaleLinear()
+                  .domain([d3.min(start_dates), d3.max(end_dates)])
+                  .range([0, chart_width - 100]);
+
+    const x_axis = d3.axisBottom()
+                  .scale(scale)
+                  .ticks(5)
+
+    svg
+      .append("g")
+      .attr("transform", `translate(${leftPadding} 180)`)
+      .call(x_axis)
+
+  svg.selectAll('.eventGroups')
+    .data(data)
+    .enter()
+    .append('g')
+    .attr('class', 'eventGroups')
+
+const eventGroups = svg.selectAll('.eventGroups')
+  
+eventGroups
+    .append('circle')
+    .attr('r', 8)
+    .attr('cx', d=> leftPadding + scale(d.start_date))
+    .attr('cy', 150)
+
+eventGroups
+    .append('text')
+    .text(d=> d.label)
+    .attr('x', d=> leftPadding + scale(d.start_date))
+    .attr('y', 130)
   }
 
-  calculateXScale = () => {};
-
-  calculateYScale = () => {};
-
-  draw = () => {};
-  addBar = () => {
-    const { data } = this.state;
-    const new_num = Math.floor(Math.random() * d3.max(data, d => d.num)) + 1;
-    const newData = [
-      ...data,
-      { key: data[data.length - 1].key + 1, num: new_num }
-    ];
-    this.setState({ data: newData }, () => this.draw());
-  };
-
-  removeBar = () => {
-    const { data } = this.state;
-    const newData = [...data].slice(1);
-    this.setState({ data: newData }, () => this.draw());
-  };
-
+  
   render() {
     return (
-      <div>
         <div id="chart" />
 
-        <div className="button-container">
-          <button id="increase" className="increase-btn" onClick={this.addBar}>
-            +
-          </button>
-          <button
-            id="decrease"
-            className="decrease-btn"
-            onClick={this.removeBar}
-          >
-            -
-          </button>
-        </div>
-      </div>
+
     );
   }
 }
