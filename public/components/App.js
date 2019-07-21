@@ -56,7 +56,7 @@ export class App extends React.Component {
     const scale = this.calculateScale()
     const x_axis = d3.axisBottom()
       .scale(scale)
-      // .ticks(5)
+      .ticks(5)
       .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
     const timelineGroup = svg.append('g').attr('class', 'timelineGroup')
@@ -104,6 +104,7 @@ export class App extends React.Component {
 
     labelGroups
       .append('text')
+      .attr('class', 'labels')
       .text(d => d.label)
       .attr('x', d => leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10)
@@ -114,6 +115,7 @@ export class App extends React.Component {
     const scale = this.calculateScale()
     const x_axis = d3.axisBottom()
       .scale(scale)
+      .ticks(5)
       .tickFormat(d3.timeFormat("%Y-%m-%d"))
 
     d3.select('.axisGroup').transition().duration(750)
@@ -149,17 +151,27 @@ export class App extends React.Component {
 
 
   move = (num) => {
-    this.setState({ timeline_x: this.state.timeline_x + num }, () => {
-      const { timeline_x } = this.state
+    const { timeline_x, chart_width, zoom_level } = this.state
+
+    const reachedLeftEnd = timeline_x + num > chart_width / 2
+    const lengthOfChart = (chart_width * zoom_level)
+    const reachedRightEnd = timeline_x + lengthOfChart + num < chart_width / 2
+    const newtimeline_x = reachedLeftEnd || reachedRightEnd ? timeline_x : timeline_x + num
+
+
+    this.setState({ timeline_x: newtimeline_x }, () => {
+
       d3.select('.timelineGroup')
         .transition()
         .duration(750)
-        .attr("transform", `translate(${timeline_x} ,0)`)
+        .attr("transform", `translate(${this.state.timeline_x} ,0)`)
     })
   }
 
   zoom = (num) => {
-    this.setState({ zoom_level: this.state.zoom_level + num }, () => this.redraw())
+    const { zoom_level } = this.state
+    const new_zoom_level = zoom_level + num < 1 ? 1 : zoom_level + num
+    this.setState({ zoom_level: new_zoom_level }, () => this.redraw())
   }
 
   render() {
