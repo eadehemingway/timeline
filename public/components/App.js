@@ -47,7 +47,7 @@ export class App extends React.Component {
   }
 
   componentDidMount() {
-    const { chart_height, chart_width, data, zoom_level } = this.state;
+    const { chart_height, chart_width, data, leftPadding } = this.state;
 
     const svg = d3
       .select('#chart')
@@ -63,8 +63,6 @@ export class App extends React.Component {
       .attr('y2', chart_height)
       .attr('stroke', 'grey')
       .attr('stroke-width', 1);
-
-    const { leftPadding } = this.state;
 
     const sortedData = data.sort(d => d.start_date);
     const dataWithYVals = sortedData.reduce((acc, d, i) => {
@@ -166,10 +164,8 @@ export class App extends React.Component {
     const { leftPadding, timeline_x, chart_width, midScreenDate } = this.state;
 
     const scale = this.calculateScale();
-    // console.log(midScreenDate);
-    const xTranslation = 400 - scale(midScreenDate) - timeline_x;
 
-    console.log(xTranslation);
+    const xTranslation = chart_width / 2 - scale(midScreenDate) - timeline_x;
 
     const x_axis = d3
       .axisBottom()
@@ -245,7 +241,6 @@ export class App extends React.Component {
   };
 
   render() {
-    console.log('in render', this.state.midScreenDate);
     return (
       <div>
         <div id="chart" />
