@@ -41,7 +41,7 @@ export class App extends React.Component {
       chart_height: 400,
       timeline_x: 0,
       zoom_level: 1,
-      leftPadding: 0,
+      leftPadding: 50,
       midScreenDate: 0
     };
   }
@@ -165,7 +165,8 @@ export class App extends React.Component {
 
     const scale = this.calculateScale();
 
-    const xTranslation = chart_width / 2 - scale(midScreenDate) - timeline_x;
+    const xTranslation =
+      chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
 
     const x_axis = d3
       .axisBottom()
