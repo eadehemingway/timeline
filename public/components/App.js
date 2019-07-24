@@ -44,7 +44,8 @@ export class App extends React.Component {
       timeline_x: 0,
       zoom_level: 1,
       leftPadding: 50,
-      midScreenDate: 0
+      midScreenDate: 0,
+      xTranslationFromZoom: 0
     };
   }
 
@@ -173,7 +174,7 @@ export class App extends React.Component {
 
     const scale = this.calculateScale();
 
-    const xTranslation =
+    const xTranslationFromZoom =
       chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
 
     const x_axis = d3
@@ -186,7 +187,7 @@ export class App extends React.Component {
       .transition()
       .duration(750)
       .call(x_axis)
-      .attr('transform', `translate(${xTranslation}, 180)`);
+      .attr('transform', `translate(${xTranslationFromZoom}, 180)`);
 
     d3.selectAll('.eventRects')
       .transition()
@@ -196,7 +197,7 @@ export class App extends React.Component {
         return width > 0 ? width : 1;
       })
       .attr('x', d => scale(d.start_date))
-      .attr('transform', `translate(${xTranslation}, 0)`);
+      .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
 
     const labelGroups = d3.selectAll('.labelGroup');
 
@@ -205,31 +206,42 @@ export class App extends React.Component {
       .transition()
       .duration(750)
       .attr('x', d => scale(d.start_date) - 5)
-      .attr('transform', `translate(${xTranslation}, 0)`);
+      .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
 
     labelGroups
       .select('text')
       .transition()
       .duration(750)
       .attr('x', d => scale(d.start_date))
-      .attr('transform', `translate(${xTranslation}, 0)`);
+      .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
+
+    this.setState({ xTranslationFromZoom });
   };
 
   move = num => {
-    const { timeline_x, chart_width, zoom_level, midScreenDate } = this.state;
-    console.log(timeline_x + num);
-    const reachedLeftEnd = timeline_x + num > chart_width / 2;
+    const {
+      timeline_x,
+      chart_width,
+      zoom_level,
+      midScreenDate,
+      xTranslationFromZoom
+    } = this.state;
+    console.log(xTranslationFromZoom);
+
+    const reachedLeftEnd =
+      timeline_x + num + xTranslationFromZoom > chart_width / 2;
     const lengthOfChart = chart_width * zoom_level;
-    const reachedRightEnd = timeline_x + lengthOfChart + num < chart_width / 2;
+    const reachedRightEnd =
+      timeline_x + lengthOfChart + num + xTranslationFromZoom < chart_width / 2;
     const newtimeline_x =
       reachedLeftEnd || reachedRightEnd ? timeline_x : timeline_x + num;
 
-    const xTranslation = timeline_x - newtimeline_x;
-
+    const xT = timeline_x - newtimeline_x;
+    // console.log(xT);
     const scale = this.calculateScale();
     const inverseScale = this.inverseScale();
     const prevMidScreenCoordinate = scale(midScreenDate);
-    const newMidScreenCoordinate = prevMidScreenCoordinate + xTranslation;
+    const newMidScreenCoordinate = prevMidScreenCoordinate + xT;
     const newMidDate = inverseScale(newMidScreenCoordinate);
 
     this.setState(
