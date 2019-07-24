@@ -86,33 +86,50 @@ export class App extends React.Component {
       .attr('stroke', 'grey')
       .attr('stroke-width', 1);
 
-    const dataWithYVals = this.getDataWithYVals();
+    svg
+      .append('g')
+      .attr('class', 'timelineGroup')
+      .append('g')
+      .attr('class', 'axisGroup');
 
+    const inverseScale = this.inverseScale();
+
+    const midScreenDate = inverseScale(
+      this.state.chart_width / 2 - this.state.leftPadding
+    );
+    this.setState({ midScreenDate });
+    this.drawAfterMount();
+  }
+
+  drawAfterMount = () => {
+    const { chart_height, chart_width, leftPadding } = this.state;
     const scale = this.calculateScale();
-
+    const dataWithYVals = this.getDataWithYVals();
     const x_axis = d3
       .axisBottom()
       .scale(scale)
       .ticks(5)
       .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
-    const timelineGroup = svg.append('g').attr('class', 'timelineGroup');
-    timelineGroup
-      .append('g')
-      .attr('class', 'axisGroup')
+    d3.select('.axisGroup')
       .attr('transform', `translate(${leftPadding} 180)`)
       .call(x_axis);
 
-    timelineGroup
-      .selectAll('.eventGroups')
+    const existingEventGroups = d3.select('svg').selectAll('.eventGroups');
+
+    console.log(existingEventGroups);
+    const enteringEventGroups = existingEventGroups
       .data(dataWithYVals)
       .enter()
       .append('g')
       .attr('class', 'eventGroups');
+    console.log(enteringEventGroups);
 
-    const eventGroups = svg.selectAll('.eventGroups');
+    const existingAndEnteringEventGroups = existingEventGroups.merge(
+      enteringEventGroups
+    );
 
-    eventGroups
+    enteringEventGroups
       .append('rect')
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
@@ -124,11 +141,11 @@ export class App extends React.Component {
       .attr('y', d => d.y)
       .attr('fill', 'LightSteelBlue');
 
-    eventGroups.append('g').attr('class', 'labelGroup');
+    enteringEventGroups.append('g').attr('class', 'labelGroup');
 
-    const labelGroups = eventGroups.selectAll('.labelGroup');
+    const enteringLabelGroups = enteringEventGroups.selectAll('.labelGroup');
 
-    labelGroups
+    enteringLabelGroups
       .append('rect')
       .attr('class', 'textBackground')
       .attr('width', d => d.label.length * 10)
@@ -137,20 +154,13 @@ export class App extends React.Component {
       .attr('y', d => d.y - 25)
       .attr('fill', ' #f7f7f7');
 
-    labelGroups
+    enteringLabelGroups
       .append('text')
       .attr('class', 'labels')
       .text(d => d.label)
       .attr('x', d => leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
-
-    const inverseScale = this.inverseScale();
-
-    const midScreenDate = inverseScale(
-      this.state.chart_width / 2 - this.state.leftPadding
-    );
-    this.setState({ midScreenDate });
-  }
+  };
 
   calculateScale = () => {
     const { chart_width, data, zoom_level, leftPadding } = this.state;
