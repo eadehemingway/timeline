@@ -8,7 +8,7 @@ export class Form extends React.Component {
   };
 
   render() {
-    console.log(this.state);
+    // console.log(this.state);
     return (
       <div className="button-container">
         <input

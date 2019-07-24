@@ -170,7 +170,6 @@ export class App extends React.Component {
   };
   redraw = () => {
     const { leftPadding, timeline_x, chart_width, midScreenDate } = this.state;
-    const dataWithYVals = this.getDataWithYVals();
 
     const scale = this.calculateScale();
 
@@ -196,7 +195,7 @@ export class App extends React.Component {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('x', d => scale(d.start_date))
       .attr('transform', `translate(${xTranslation}, 0)`);
 
     const labelGroups = d3.selectAll('.labelGroup');
@@ -205,20 +204,20 @@ export class App extends React.Component {
       .select('.textBackground')
       .transition()
       .duration(750)
-      .attr('x', d => leftPadding + scale(d.start_date) - 5)
+      .attr('x', d => scale(d.start_date) - 5)
       .attr('transform', `translate(${xTranslation}, 0)`);
 
     labelGroups
       .select('text')
       .transition()
       .duration(750)
-      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('x', d => scale(d.start_date))
       .attr('transform', `translate(${xTranslation}, 0)`);
   };
 
   move = num => {
     const { timeline_x, chart_width, zoom_level, midScreenDate } = this.state;
-
+    console.log(timeline_x + num);
     const reachedLeftEnd = timeline_x + num > chart_width / 2;
     const lengthOfChart = chart_width * zoom_level;
     const reachedRightEnd = timeline_x + lengthOfChart + num < chart_width / 2;
