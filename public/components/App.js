@@ -158,7 +158,7 @@ export class App extends React.Component {
 
     const rectCurrent = eventGroupCurrent.selectAll('.eventRects');
 
-    const rectUpdate = rectEntering.merge(rectCurrent);
+    const rectUpdate = rectCurrent.merge(rectEntering);
 
     rectUpdate
       .transition(sevenT)
@@ -166,63 +166,61 @@ export class App extends React.Component {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => {
-        console.log(leftPadding + scale(d.start_date));
-        return leftPadding + scale(d.start_date);
-      });
+      .attr('x', d => leftPadding + scale(d.start_date));
 
     //----------------------------------------------------------------------
 
-    const labelGroupCurrent = eventGroupEntering
-      .append('g')
-      .attr('class', 'labelGroup');
+    // const labelGroupCurrent = eventGroupEntering
+    //   .append('g')
+    //   .attr('class', 'labelGroup');
 
-    const labelGroupEntering = eventGroupEntering.selectAll('.labelGroup');
+    // const labelGroupEntering = eventGroupEntering.selectAll('.labelGroup');
 
-    const textRectCurrent = labelGroupCurrent.selectAll('.textBackground');
+    // const textRectCurrent = labelGroupCurrent.selectAll('.textBackground');
 
-    const textRectEntering = labelGroupEntering
-      .append('rect')
-      .attr('class', 'textBackground')
-      .attr('width', d => d.label.length * 10)
-      .attr('height', 20)
-      .attr('x', d => leftPadding + scale(d.start_date) - 5)
-      .attr('y', d => d.y - 25)
-      .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
+    // const textRectEntering = labelGroupEntering
+    //   .append('rect')
+    //   .attr('class', 'textBackground')
+    //   .attr('width', d => d.label.length * 10)
+    //   .attr('height', 20)
+    //   .attr('x', d => leftPadding + scale(d.start_date) - 5)
+    //   .attr('y', d => d.y - 25)
+    //   .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
-    const textRectUpdate = textRectEntering.merge(textRectCurrent);
+    // const textRectUpdate = textRectEntering.merge(textRectCurrent);
 
-    textRectUpdate
-      .transition(sevenT)
-      .attr('width', d => d.label.length * 10)
-      .attr('height', 20)
-      .attr('x', d => leftPadding + scale(d.start_date) - 5)
-      .attr('y', d => d.y - 25)
-      .attr('fill', ' #f7f7f7');
+    // textRectUpdate
+    //   .transition(sevenT)
+    //   .attr('width', d => d.label.length * 10)
+    //   .attr('height', 20)
+    //   .attr('x', d => leftPadding + scale(d.start_date) - 5)
+    //   .attr('y', d => d.y - 25)
+    //   .attr('fill', ' #f7f7f7');
 
     //----------------------------------------------------------------------
-    const textCurrent = labelGroupCurrent.selectAll('.labels');
-    const textEntering = labelGroupEntering
-      .append('text')
-      .attr('class', 'labels')
-      .text(d => d.label)
-      .attr('x', d => leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10);
+    // const textCurrent = labelGroupCurrent.selectAll('.labels');
+    // const textEntering = labelGroupEntering
+    //   .append('text')
+    //   .attr('class', 'labels')
+    //   .text(d => d.label)
+    //   .attr('x', d => leftPadding + scale(d.start_date))
+    //   .attr('y', d => d.y - 10);
 
-    const textUpdate = textEntering.merge(textCurrent);
+    // const textUpdate = textEntering.merge(textCurrent);
 
-    textUpdate
-      .transition(sevenT)
-      .attr('x', d => leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10);
+    // textUpdate
+    //   .transition(sevenT)
+    //   .attr('x', d => leftPadding + scale(d.start_date))
+    //   .attr('y', d => d.y - 10);
   };
 
   calculateScale = () => {
     const { chart_width, data, zoom_level, leftPadding } = this.state;
     const start_dates = data.map(d => d.start_date);
     const end_dates = data.map(d => d.end_date);
+
     return d3
-      .scaleLinear()
+      .scaleTime()
       .domain([d3.min(start_dates), d3.max(end_dates)])
       .range([0, chart_width * zoom_level - leftPadding * 2]);
   };
