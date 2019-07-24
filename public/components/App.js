@@ -50,7 +50,7 @@ export class App extends React.Component {
   }
 
   getDataWithYVals = () => {
-    const { chart_height, chart_width, data, leftPadding } = this.state;
+    const { data } = this.state;
 
     const sortedData = data.sort(d => d.start_date);
     return sortedData.reduce((acc, d, i) => {
@@ -69,7 +69,7 @@ export class App extends React.Component {
   };
 
   componentDidMount() {
-    const { chart_height, chart_width, data, leftPadding } = this.state;
+    const { chart_height, chart_width, leftPadding } = this.state;
 
     const svg = d3
       .select('#chart')
@@ -145,9 +145,11 @@ export class App extends React.Component {
       .attr('y', d => d.y - 10);
 
     const inverseScale = this.inverseScale();
-    const pointOnGraph = this.state.chart_width / 2 - this.state.timeline_x;
-    const midScreen = inverseScale(pointOnGraph - this.state.leftPadding);
-    this.setState({ midScreenDate: midScreen });
+
+    const midScreenDate = inverseScale(
+      this.state.chart_width / 2 - this.state.leftPadding
+    );
+    this.setState({ midScreenDate });
   }
 
   calculateScale = () => {
