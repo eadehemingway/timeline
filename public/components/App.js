@@ -1,5 +1,7 @@
 import React from 'react';
 import * as d3 from 'd3';
+import { ButtonPanel } from './ButtonPanel';
+import { Form } from './Form';
 
 export class App extends React.Component {
   constructor(props) {
@@ -46,6 +48,25 @@ export class App extends React.Component {
     };
   }
 
+  getDataWithYVals = () => {
+    const { chart_height, chart_width, data, leftPadding } = this.state;
+
+    const sortedData = data.sort(d => d.start_date);
+    return sortedData.reduce((acc, d, i) => {
+      let y = 165;
+      if (i > 0) {
+        const prevData = acc[i - 1];
+        const isOverlap = prevData.end_date > d.start_date;
+        y = isOverlap ? prevData.y - 40 : 165;
+      }
+      const newObj = {
+        ...d,
+        y
+      };
+      return [...acc, newObj];
+    }, []);
+  };
+
   componentDidMount() {
     const { chart_height, chart_width, data, leftPadding } = this.state;
 
@@ -64,20 +85,7 @@ export class App extends React.Component {
       .attr('stroke', 'grey')
       .attr('stroke-width', 1);
 
-    const sortedData = data.sort(d => d.start_date);
-    const dataWithYVals = sortedData.reduce((acc, d, i) => {
-      let y = 165;
-      if (i > 0) {
-        const prevData = acc[i - 1];
-        const isOverlap = prevData.end_date > d.start_date;
-        y = isOverlap ? prevData.y - 40 : 165;
-      }
-      const newObj = {
-        ...d,
-        y
-      };
-      return [...acc, newObj];
-    }, []);
+    const dataWithYVals = this.getDataWithYVals();
 
     const scale = this.calculateScale();
 
@@ -162,6 +170,7 @@ export class App extends React.Component {
   };
   redraw = () => {
     const { leftPadding, timeline_x, chart_width, midScreenDate } = this.state;
+    const dataWithYVals = this.getDataWithYVals();
 
     const scale = this.calculateScale();
 
@@ -241,41 +250,19 @@ export class App extends React.Component {
     this.setState({ zoom_level: new_zoom_level }, () => this.redraw());
   };
 
+  addNewEvent = newEvent => {
+    const newDataArr = [...this.state.data, newEvent];
+    this.setState({ data: newDataArr }, () => {
+      this.redraw();
+    });
+  };
   render() {
     return (
       <div>
         <div id="chart" />
 
-        <div className="button-container">
-          <button
-            id="increase"
-            className="increase-btn"
-            onClick={() => this.zoom(1)}
-          >
-            +
-          </button>
-          <button
-            id="decrease"
-            className="decrease-btn"
-            onClick={() => this.zoom(-1)}
-          >
-            -
-          </button>
-          <button
-            id="increase"
-            className="increase-btn"
-            onClick={() => this.move(300)}
-          >
-            L
-          </button>
-          <button
-            id="decrease"
-            className="decrease-btn"
-            onClick={() => this.move(-300)}
-          >
-            R
-          </button>
-        </div>
+        <ButtonPanel zoom={this.zoom} move={this.move} />
+        <Form addNewEvent={this.addNewEvent} />
       </div>
     );
   }
