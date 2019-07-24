@@ -170,15 +170,9 @@ export class App extends React.Component {
 
     //----------------------------------------------------------------------
 
-    const labelGroupCurrent = eventGroupEntering
-      .append('g')
-      .attr('class', 'labelGroup');
-
-    const labelGroupEntering = eventGroupEntering.selectAll('.labelGroup');
-
     const textRectCurrent = eventGroupCurrent.selectAll('.textBackground');
 
-    const textRectEntering = labelGroupEntering
+    const textRectEntering = eventGroupEntering
       .append('rect')
       .attr('class', 'textBackground')
       .attr('width', d => d.label.length * 10)
@@ -199,7 +193,7 @@ export class App extends React.Component {
 
     //----------------------------------------------------------------------
     const textCurrent = eventGroupCurrent.selectAll('.labels');
-    const textEntering = labelGroupEntering
+    const textEntering = eventGroupEntering
       .append('text')
       .attr('class', 'labels')
       .text(d => d.label)
@@ -303,6 +297,7 @@ export class App extends React.Component {
         .attr('transform', `translate(${xTranslationFromZoom}, 180)`);
 
       const rect = d3.selectAll('.eventRects');
+      const eventGroup = d3.selectAll('.eventGroups');
 
       rect
         .transition(sevenT)
@@ -313,16 +308,12 @@ export class App extends React.Component {
         .attr('x', d => scale(d.start_date))
         .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
 
-      const labelGroups = d3.selectAll('.labelGroup');
-
-      labelGroups
-        .select('.textBackground')
+      d3.selectAll('.textBackground')
         .transition(sevenT)
         .attr('x', d => scale(d.start_date) - 5)
         .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
 
-      labelGroups
-        .select('text')
+      d3.selectAll('.labels')
         .transition(sevenT)
         .attr('x', d => scale(d.start_date))
         .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
