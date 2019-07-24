@@ -226,22 +226,22 @@ export class App extends React.Component {
       midScreenDate,
       xTranslationFromZoom
     } = this.state;
-    console.log(xTranslationFromZoom);
+
+    const lengthOfChart = chart_width * zoom_level;
 
     const reachedLeftEnd =
       timeline_x + num + xTranslationFromZoom > chart_width / 2;
-    const lengthOfChart = chart_width * zoom_level;
+
     const reachedRightEnd =
       timeline_x + lengthOfChart + num + xTranslationFromZoom < chart_width / 2;
-    const newtimeline_x =
-      reachedLeftEnd || reachedRightEnd ? timeline_x : timeline_x + num;
 
-    const xT = timeline_x - newtimeline_x;
-    // console.log(xT);
+    const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
+    const newtimeline_x = timeline_x + moveValue;
+
     const scale = this.calculateScale();
     const inverseScale = this.inverseScale();
     const prevMidScreenCoordinate = scale(midScreenDate);
-    const newMidScreenCoordinate = prevMidScreenCoordinate + xT;
+    const newMidScreenCoordinate = prevMidScreenCoordinate - moveValue;
     const newMidDate = inverseScale(newMidScreenCoordinate);
 
     this.setState(
