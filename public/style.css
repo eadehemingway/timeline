@@ -31,3 +31,17 @@
   display: flex;
   justify-content: center;
 }
+
+.axisGroup path,
+.axisGroup line {
+  fill: none;
+  stroke: grey;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
+}
+.axisGroup text,
+.labels {
+  font-family: sans-serif;
+  font-size: 11px;
+  fill: grey;
+}
