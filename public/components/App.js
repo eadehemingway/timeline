@@ -170,48 +170,48 @@ export class App extends React.Component {
 
     //----------------------------------------------------------------------
 
-    // const labelGroupCurrent = eventGroupEntering
-    //   .append('g')
-    //   .attr('class', 'labelGroup');
+    const labelGroupCurrent = eventGroupEntering
+      .append('g')
+      .attr('class', 'labelGroup');
 
-    // const labelGroupEntering = eventGroupEntering.selectAll('.labelGroup');
+    const labelGroupEntering = eventGroupEntering.selectAll('.labelGroup');
 
-    // const textRectCurrent = labelGroupCurrent.selectAll('.textBackground');
+    const textRectCurrent = eventGroupCurrent.selectAll('.textBackground');
 
-    // const textRectEntering = labelGroupEntering
-    //   .append('rect')
-    //   .attr('class', 'textBackground')
-    //   .attr('width', d => d.label.length * 10)
-    //   .attr('height', 20)
-    //   .attr('x', d => leftPadding + scale(d.start_date) - 5)
-    //   .attr('y', d => d.y - 25)
-    //   .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
+    const textRectEntering = labelGroupEntering
+      .append('rect')
+      .attr('class', 'textBackground')
+      .attr('width', d => d.label.length * 10)
+      .attr('height', 20)
+      .attr('x', d => leftPadding + scale(d.start_date) - 5)
+      .attr('y', d => d.y - 25)
+      .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
-    // const textRectUpdate = textRectEntering.merge(textRectCurrent);
+    const textRectUpdate = textRectCurrent.merge(textRectEntering);
 
-    // textRectUpdate
-    //   .transition(sevenT)
-    //   .attr('width', d => d.label.length * 10)
-    //   .attr('height', 20)
-    //   .attr('x', d => leftPadding + scale(d.start_date) - 5)
-    //   .attr('y', d => d.y - 25)
-    //   .attr('fill', ' #f7f7f7');
+    textRectUpdate
+      .transition(sevenT)
+      .attr('width', d => d.label.length * 10)
+      .attr('height', 20)
+      .attr('x', d => leftPadding + scale(d.start_date) - 5)
+      .attr('y', d => d.y - 25)
+      .attr('fill', ' #f7f7f7');
 
     //----------------------------------------------------------------------
-    // const textCurrent = labelGroupCurrent.selectAll('.labels');
-    // const textEntering = labelGroupEntering
-    //   .append('text')
-    //   .attr('class', 'labels')
-    //   .text(d => d.label)
-    //   .attr('x', d => leftPadding + scale(d.start_date))
-    //   .attr('y', d => d.y - 10);
+    const textCurrent = eventGroupCurrent.selectAll('.labels');
+    const textEntering = labelGroupEntering
+      .append('text')
+      .attr('class', 'labels')
+      .text(d => d.label)
+      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('y', d => d.y - 10);
 
-    // const textUpdate = textEntering.merge(textCurrent);
+    const textUpdate = textCurrent.merge(textEntering);
 
-    // textUpdate
-    //   .transition(sevenT)
-    //   .attr('x', d => leftPadding + scale(d.start_date))
-    //   .attr('y', d => d.y - 10);
+    textUpdate
+      .transition(sevenT)
+      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('y', d => d.y - 10);
   };
 
   calculateScale = () => {
