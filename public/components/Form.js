@@ -3,12 +3,12 @@ import React from 'react';
 export class Form extends React.Component {
   state = {
     label: '',
-    startDate: '',
-    endDate: ''
+    start_date: '',
+    end_date: ''
   };
 
   render() {
-    const { label, startDate, endDate } = this.state;
+    const { label, start_date, end_date } = this.state;
     return (
       <div className="button-container">
         <input
@@ -18,14 +18,16 @@ export class Form extends React.Component {
         />
         <input
           type="date"
-          onChange={e => this.setState({ startDate: new Date(e.target.value) })}
+          onChange={e =>
+            this.setState({ start_date: new Date(e.target.value) })
+          }
         />
         <input
           type="date"
-          onChange={e => this.setState({ endDate: new Date(e.target.value) })}
+          onChange={e => this.setState({ end_date: new Date(e.target.value) })}
         />
         <button
-          onClick={e => this.props.addNewEvent({ label, startDate, endDate })}
+          onClick={e => this.props.addNewEvent({ label, start_date, end_date })}
         >
           {' '}
           submit

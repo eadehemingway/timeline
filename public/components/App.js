@@ -32,12 +32,12 @@ export class App extends React.Component {
           label: 'more',
           start_date: new Date(2001, 0, 0),
           end_date: new Date(2006, 0, 0)
-        },
-        {
-          label: 'three',
-          start_date: new Date(2010, 0, 0),
-          end_date: new Date(2011, 0, 0)
         }
+        // {
+        //   label: 'three',
+        //   start_date: new Date(2010, 0, 0),
+        //   end_date: new Date(2011, 0, 0)
+        // }
       ],
       chart_width: 800,
       chart_height: 400,
@@ -166,7 +166,10 @@ export class App extends React.Component {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => leftPadding + scale(d.start_date));
+      .attr('x', d => {
+        console.log(leftPadding + scale(d.start_date));
+        return leftPadding + scale(d.start_date);
+      });
 
     //----------------------------------------------------------------------
 
