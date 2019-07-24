@@ -70,7 +70,7 @@ export class App extends React.Component {
 
   componentDidMount() {
     const { chart_height, chart_width, leftPadding } = this.state;
-
+    const scale = this.calculateScale();
     const svg = d3
       .select('#chart')
       .append('svg')
@@ -92,19 +92,6 @@ export class App extends React.Component {
       .append('g')
       .attr('class', 'axisGroup');
 
-    const inverseScale = this.inverseScale();
-
-    const midScreenDate = inverseScale(
-      this.state.chart_width / 2 - this.state.leftPadding
-    );
-    this.setState({ midScreenDate });
-    this.drawAfterMount();
-  }
-
-  drawAfterMount = () => {
-    const { chart_height, chart_width, leftPadding } = this.state;
-    const scale = this.calculateScale();
-    const dataWithYVals = this.getDataWithYVals();
     const x_axis = d3
       .axisBottom()
       .scale(scale)
@@ -115,17 +102,45 @@ export class App extends React.Component {
       .attr('transform', `translate(${leftPadding} 180)`)
       .call(x_axis);
 
-    const existingEventGroups = d3.select('svg').selectAll('.eventGroups');
+    const inverseScale = this.inverseScale();
 
-    console.log(existingEventGroups);
-    const enteringEventGroups = existingEventGroups
-      .data(dataWithYVals)
+    const midScreenDate = inverseScale(
+      this.state.chart_width / 2 - this.state.leftPadding
+    );
+    this.setState({ midScreenDate });
+    this.update();
+  }
+
+  update = () => {
+    const { leftPadding, timeline_x, chart_width, midScreenDate } = this.state;
+    const scale = this.calculateScale();
+    const dataWithYVals = this.getDataWithYVals();
+
+    const x_axis = d3
+      .axisBottom()
+      .scale(scale)
+      .ticks(5)
+      .tickFormat(d3.timeFormat('%Y-%m-%d'));
+
+    d3.select('.axisGroup')
+      .transition()
+      .duration(750)
+      .attr('transform', `translate(${leftPadding} 180)`) // in redraw its xTranslationFromZoom (as calculated above)
+      .call(x_axis);
+
+    const currentEventGroupSelection = d3
+      .select('.timelineGroup')
+      .selectAll('.eventGroups')
+      .data(dataWithYVals);
+
+    const enteringEventGroups = currentEventGroupSelection
       .enter()
       .append('g')
       .attr('class', 'eventGroups');
-    console.log(enteringEventGroups);
 
-    const existingAndEnteringEventGroups = existingEventGroups.merge(
+    currentEventGroupSelection.exit().remove();
+
+    const existingAndEnteringEventGroups = currentEventGroupSelection.merge(
       enteringEventGroups
     );
 
@@ -141,23 +156,56 @@ export class App extends React.Component {
       .attr('y', d => d.y)
       .attr('fill', 'LightSteelBlue');
 
-    enteringEventGroups.append('g').attr('class', 'labelGroup');
+    existingAndEnteringEventGroups
+      .transition()
+      .duration(750)
+      .attr('width', d => {
+        const width = scale(d.end_date) - scale(d.start_date);
+        return width > 0 ? width : 1;
+      })
+      .attr('x', d => scale(d.start_date));
+
+    const currentLabelGroupSelection = enteringEventGroups
+      .append('g')
+      .attr('class', 'labelGroup');
 
     const enteringLabelGroups = enteringEventGroups.selectAll('.labelGroup');
 
-    enteringLabelGroups
+    const currentAndEnteringLabelGroups = currentLabelGroupSelection.merge(
+      enteringLabelGroups
+    );
+    const currentTextBackgroundRects = currentLabelGroupSelection.selectAll(
+      '.textBackground'
+    );
+
+    const enteringTextBackgoundRects = enteringLabelGroups
       .append('rect')
-      .attr('class', 'textBackground')
+      .attr('class', 'textBackground');
+
+    const allTextBackgroundRects = enteringTextBackgoundRects.merge(
+      currentTextBackgroundRects
+    );
+
+    allTextBackgroundRects
+      .transition()
+      .duration(750)
       .attr('width', d => d.label.length * 10)
       .attr('height', 20)
       .attr('x', d => leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
       .attr('fill', ' #f7f7f7');
 
-    enteringLabelGroups
+    const currentText = currentLabelGroupSelection.selectAll('.labels');
+    const enteringText = enteringLabelGroups
       .append('text')
       .attr('class', 'labels')
-      .text(d => d.label)
+      .text(d => d.label);
+
+    const allText = enteringText.merge(currentText);
+
+    allText
+      .transition()
+      .duration(750)
       .attr('x', d => leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
   };
@@ -180,54 +228,6 @@ export class App extends React.Component {
       .scaleLinear()
       .domain([0, chart_width * zoom_level - leftPadding * 2])
       .range([d3.min(start_dates), d3.max(end_dates)]);
-  };
-  redraw = () => {
-    const { leftPadding, timeline_x, chart_width, midScreenDate } = this.state;
-
-    const scale = this.calculateScale();
-
-    const xTranslationFromZoom =
-      chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
-
-    const x_axis = d3
-      .axisBottom()
-      .scale(scale)
-      .ticks(5)
-      .tickFormat(d3.timeFormat('%Y-%m-%d'));
-
-    d3.select('.axisGroup')
-      .transition()
-      .duration(750)
-      .call(x_axis)
-      .attr('transform', `translate(${xTranslationFromZoom}, 180)`);
-
-    d3.selectAll('.eventRects')
-      .transition()
-      .duration(750)
-      .attr('width', d => {
-        const width = scale(d.end_date) - scale(d.start_date);
-        return width > 0 ? width : 1;
-      })
-      .attr('x', d => scale(d.start_date))
-      .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
-
-    const labelGroups = d3.selectAll('.labelGroup');
-
-    labelGroups
-      .select('.textBackground')
-      .transition()
-      .duration(750)
-      .attr('x', d => scale(d.start_date) - 5)
-      .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
-
-    labelGroups
-      .select('text')
-      .transition()
-      .duration(750)
-      .attr('x', d => scale(d.start_date))
-      .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
-
-    this.setState({ xTranslationFromZoom });
   };
 
   move = num => {
@@ -270,13 +270,67 @@ export class App extends React.Component {
   zoom = num => {
     const { zoom_level } = this.state;
     const new_zoom_level = zoom_level + num < 1 ? 1 : zoom_level + num;
-    this.setState({ zoom_level: new_zoom_level }, () => this.redraw());
+    this.setState({ zoom_level: new_zoom_level }, () => {
+      const {
+        leftPadding,
+        timeline_x,
+        chart_width,
+        midScreenDate
+      } = this.state;
+
+      const scale = this.calculateScale();
+
+      const xTranslationFromZoom =
+        chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
+
+      const x_axis = d3
+        .axisBottom()
+        .scale(scale)
+        .ticks(5)
+        .tickFormat(d3.timeFormat('%Y-%m-%d'));
+
+      d3.select('.axisGroup')
+        .transition()
+        .duration(750)
+        .call(x_axis)
+        .attr('transform', `translate(${xTranslationFromZoom}, 180)`);
+
+      const rect = d3.selectAll('.eventRects');
+
+      rect
+        .transition()
+        .duration(750)
+        .attr('width', d => {
+          const width = scale(d.end_date) - scale(d.start_date);
+          return width > 0 ? width : 1;
+        })
+        .attr('x', d => scale(d.start_date))
+        .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
+
+      const labelGroups = d3.selectAll('.labelGroup');
+
+      labelGroups
+        .select('.textBackground')
+        .transition()
+        .duration(750)
+        .attr('x', d => scale(d.start_date) - 5)
+        .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
+
+      labelGroups
+        .select('text')
+        .transition()
+        .duration(750)
+        .attr('x', d => scale(d.start_date))
+        .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
+
+      this.setState({ xTranslationFromZoom });
+    });
   };
 
   addNewEvent = newEvent => {
     const newDataArr = [...this.state.data, newEvent];
     this.setState({ data: newDataArr }, () => {
-      this.redraw();
+      // this.update();
     });
   };
   render() {
