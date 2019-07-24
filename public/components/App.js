@@ -92,6 +92,7 @@ export class App extends React.Component {
       .append('g')
       .attr('class', 'axisGroup');
 
+    // we draw the axis here so that in the update func we can use transition without it happening on page load
     const x_axis = d3
       .axisBottom()
       .scale(scale)
@@ -112,10 +113,12 @@ export class App extends React.Component {
   }
 
   update = () => {
-    const { leftPadding, timeline_x, chart_width, midScreenDate } = this.state;
+    const { leftPadding } = this.state;
     const scale = this.calculateScale();
     const dataWithYVals = this.getDataWithYVals();
+    const sevenT = this.getTransition();
 
+    // draw the xaxis again here so that it can update in relation to chanes in the scale.
     const x_axis = d3
       .axisBottom()
       .scale(scale)
@@ -123,28 +126,25 @@ export class App extends React.Component {
       .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
     d3.select('.axisGroup')
-      .transition()
-      .duration(750)
-      .attr('transform', `translate(${leftPadding} 180)`) // in redraw its xTranslationFromZoom (as calculated above)
+      .transition(sevenT)
+      .attr('transform', `translate(${leftPadding} 180)`)
       .call(x_axis);
 
-    const currentEventGroupSelection = d3
-      .select('.timelineGroup')
+    const timelineGroup = d3.select('.timelineGroup');
+    //----------------------------------------------------------------------
+    const eventGroupCurrent = timelineGroup
       .selectAll('.eventGroups')
       .data(dataWithYVals);
 
-    const enteringEventGroups = currentEventGroupSelection
+    const eventGroupEntering = eventGroupCurrent
       .enter()
       .append('g')
       .attr('class', 'eventGroups');
 
-    currentEventGroupSelection.exit().remove();
+    eventGroupCurrent.exit().remove();
 
-    const existingAndEnteringEventGroups = currentEventGroupSelection.merge(
-      enteringEventGroups
-    );
-
-    enteringEventGroups
+    //----------------------------------------------------------------------
+    const rectEntering = eventGroupEntering
       .append('rect')
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
@@ -156,56 +156,60 @@ export class App extends React.Component {
       .attr('y', d => d.y)
       .attr('fill', 'LightSteelBlue');
 
-    existingAndEnteringEventGroups
-      .transition()
-      .duration(750)
+    const rectCurrent = eventGroupCurrent.selectAll('.eventRects');
+
+    const rectUpdate = rectEntering.merge(rectCurrent);
+
+    rectUpdate
+      .transition(sevenT)
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => scale(d.start_date));
+      .attr('x', d => leftPadding + scale(d.start_date));
 
-    const currentLabelGroupSelection = enteringEventGroups
+    //----------------------------------------------------------------------
+
+    const labelGroupCurrent = eventGroupEntering
       .append('g')
       .attr('class', 'labelGroup');
 
-    const enteringLabelGroups = enteringEventGroups.selectAll('.labelGroup');
+    const labelGroupEntering = eventGroupEntering.selectAll('.labelGroup');
 
-    const currentAndEnteringLabelGroups = currentLabelGroupSelection.merge(
-      enteringLabelGroups
-    );
-    const currentTextBackgroundRects = currentLabelGroupSelection.selectAll(
-      '.textBackground'
-    );
+    const textRectCurrent = labelGroupCurrent.selectAll('.textBackground');
 
-    const enteringTextBackgoundRects = enteringLabelGroups
+    const textRectEntering = labelGroupEntering
       .append('rect')
-      .attr('class', 'textBackground');
+      .attr('class', 'textBackground')
+      .attr('width', d => d.label.length * 10)
+      .attr('height', 20)
+      .attr('x', d => leftPadding + scale(d.start_date) - 5)
+      .attr('y', d => d.y - 25)
+      .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
-    const allTextBackgroundRects = enteringTextBackgoundRects.merge(
-      currentTextBackgroundRects
-    );
+    const textRectUpdate = textRectEntering.merge(textRectCurrent);
 
-    allTextBackgroundRects
-      .transition()
-      .duration(750)
+    textRectUpdate
+      .transition(sevenT)
       .attr('width', d => d.label.length * 10)
       .attr('height', 20)
       .attr('x', d => leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
       .attr('fill', ' #f7f7f7');
 
-    const currentText = currentLabelGroupSelection.selectAll('.labels');
-    const enteringText = enteringLabelGroups
+    //----------------------------------------------------------------------
+    const textCurrent = labelGroupCurrent.selectAll('.labels');
+    const textEntering = labelGroupEntering
       .append('text')
       .attr('class', 'labels')
-      .text(d => d.label);
+      .text(d => d.label)
+      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('y', d => d.y - 10);
 
-    const allText = enteringText.merge(currentText);
+    const textUpdate = textEntering.merge(textCurrent);
 
-    allText
-      .transition()
-      .duration(750)
+    textUpdate
+      .transition(sevenT)
       .attr('x', d => leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
   };
@@ -238,7 +242,7 @@ export class App extends React.Component {
       midScreenDate,
       xTranslationFromZoom
     } = this.state;
-
+    const sevenT = this.getTransition();
     const lengthOfChart = chart_width * zoom_level;
 
     const reachedLeftEnd =
@@ -260,17 +264,20 @@ export class App extends React.Component {
       { timeline_x: newtimeline_x, midScreenDate: newMidDate },
       () => {
         d3.select('.timelineGroup')
-          .transition()
-          .duration(750)
+          .transition(sevenT)
           .attr('transform', `translate(${this.state.timeline_x} ,0)`);
       }
     );
   };
 
+  getTransition = () => {
+    return d3.transition().duration(750);
+  };
   zoom = num => {
     const { zoom_level } = this.state;
     const new_zoom_level = zoom_level + num < 1 ? 1 : zoom_level + num;
     this.setState({ zoom_level: new_zoom_level }, () => {
+      const sevenT = this.getTransition();
       const {
         leftPadding,
         timeline_x,
@@ -290,16 +297,14 @@ export class App extends React.Component {
         .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
       d3.select('.axisGroup')
-        .transition()
-        .duration(750)
+        .transition(sevenT)
         .call(x_axis)
         .attr('transform', `translate(${xTranslationFromZoom}, 180)`);
 
       const rect = d3.selectAll('.eventRects');
 
       rect
-        .transition()
-        .duration(750)
+        .transition(sevenT)
         .attr('width', d => {
           const width = scale(d.end_date) - scale(d.start_date);
           return width > 0 ? width : 1;
@@ -311,15 +316,13 @@ export class App extends React.Component {
 
       labelGroups
         .select('.textBackground')
-        .transition()
-        .duration(750)
+        .transition(sevenT)
         .attr('x', d => scale(d.start_date) - 5)
         .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
 
       labelGroups
         .select('text')
-        .transition()
-        .duration(750)
+        .transition(sevenT)
         .attr('x', d => scale(d.start_date))
         .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
 
@@ -330,7 +333,7 @@ export class App extends React.Component {
   addNewEvent = newEvent => {
     const newDataArr = [...this.state.data, newEvent];
     this.setState({ data: newDataArr }, () => {
-      // this.update();
+      this.update();
     });
   };
   render() {

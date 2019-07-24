@@ -8,7 +8,7 @@ export class Form extends React.Component {
   };
 
   render() {
-    // console.log(this.state);
+    const { label, startDate, endDate } = this.state;
     return (
       <div className="button-container">
         <input
@@ -24,7 +24,12 @@ export class Form extends React.Component {
           type="date"
           onChange={e => this.setState({ endDate: new Date(e.target.value) })}
         />
-        <button onClick={this.props.addNewEvent}> submit</button>
+        <button
+          onClick={e => this.props.addNewEvent({ label, startDate, endDate })}
+        >
+          {' '}
+          submit
+        </button>
       </div>
     );
   }
