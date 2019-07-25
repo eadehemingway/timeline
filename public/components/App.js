@@ -245,8 +245,8 @@ export class App extends React.Component {
 
     const reachedRightEnd =
       timeline_x + lengthOfChart + num + xTranslationFromZoom < chart_width / 2;
-
-    const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
+    // const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
+    const moveValue = num; // I.E. REMOVE THE STOPS
     const newtimeline_x = timeline_x + moveValue;
 
     const scale = this.calculateScale();

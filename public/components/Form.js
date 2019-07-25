@@ -32,6 +32,19 @@ export class Form extends React.Component {
           {' '}
           submit
         </button>
+
+        <button
+          onClick={e =>
+            this.props.addNewEvent({
+              label: 'NEWWWWWWW',
+              start_date: new Date(2030, 0, 0),
+              end_date: new Date(2032, 0, 0)
+            })
+          }
+        >
+          {' '}
+          auto fill
+        </button>
       </div>
     );
   }
