@@ -4,6 +4,9 @@ import { ButtonPanel } from './ButtonPanel';
 import { Form } from './Form';
 
 export class App extends React.Component {
+  leftPadding = 50;
+  chart_width = 800;
+  chart_height = 400;
   constructor(props) {
     super(props);
     this.state = {
@@ -33,36 +36,28 @@ export class App extends React.Component {
           start_date: new Date(2001, 0, 0),
           end_date: new Date(2006, 0, 0)
         }
-        // {
-        //   label: 'three',
-        //   start_date: new Date(2010, 0, 0),
-        //   end_date: new Date(2011, 0, 0)
-        // }
       ],
-      chart_width: 800,
-      chart_height: 400,
+
       timeline_x: 0,
       zoom_level: 1,
-      leftPadding: 50,
       midScreenDate: 0
     };
   }
 
   componentDidMount() {
-    const { chart_height, chart_width, leftPadding } = this.state;
     const scale = this.calculateScale();
     const svg = d3
       .select('#chart')
       .append('svg')
-      .attr('width', chart_width)
-      .attr('height', chart_height);
+      .attr('width', this.chart_width)
+      .attr('height', this.chart_height);
 
     svg
       .append('line')
-      .attr('x1', chart_width / 2)
-      .attr('x2', chart_width / 2)
+      .attr('x1', this.chart_width / 2)
+      .attr('x2', this.chart_width / 2)
       .attr('y1', 0)
-      .attr('y2', chart_height)
+      .attr('y2', this.chart_height)
       .attr('stroke', 'grey')
       .attr('stroke-width', 1);
 
@@ -80,26 +75,18 @@ export class App extends React.Component {
       .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
     d3.select('.axisGroup')
-      .attr('transform', `translate(${leftPadding} 180)`)
+      .attr('transform', `translate(${this.leftPadding} 180)`)
       .call(x_axis);
 
     const inverseScale = this.inverseScale();
 
-    const midScreenDate = inverseScale(
-      this.state.chart_width / 2 - this.state.leftPadding
-    );
+    const midScreenDate = inverseScale(this.chart_width / 2 - this.leftPadding);
     this.setState({ midScreenDate });
     this.redraw();
   }
 
   redraw = () => {
-    const {
-      leftPadding,
-      chart_width,
-      timeline_x,
-      midScreenDate,
-      zoom_level
-    } = this.state;
+    const { timeline_x, midScreenDate, zoom_level } = this.state;
     const scale = this.calculateScale();
     const dataWithYVals = this.getDataWithYVals();
     const sevenT = this.getTransition();
@@ -113,7 +100,7 @@ export class App extends React.Component {
 
     d3.select('.axisGroup')
       .transition(sevenT)
-      .attr('transform', `translate(${leftPadding}, 180)`)
+      .attr('transform', `translate(${this.leftPadding}, 180)`)
       .call(x_axis);
 
     const timelineGroup = d3.select('.timelineGroup');
@@ -138,7 +125,7 @@ export class App extends React.Component {
       })
       .attr('height', 10)
       .attr('class', 'eventRects')
-      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => d.y)
       .attr('fill', 'LightSteelBlue');
 
@@ -152,7 +139,7 @@ export class App extends React.Component {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => leftPadding + scale(d.start_date));
+      .attr('x', d => this.leftPadding + scale(d.start_date));
 
     //----------------------------------------------------------------------
 
@@ -163,7 +150,7 @@ export class App extends React.Component {
       .attr('class', 'textBackground')
       .attr('width', d => d.label.length * 10)
       .attr('height', 20)
-      .attr('x', d => leftPadding + scale(d.start_date) - 5)
+      .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
       .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
@@ -173,7 +160,7 @@ export class App extends React.Component {
       .transition(sevenT)
       .attr('width', d => d.label.length * 10)
       .attr('height', 20)
-      .attr('x', d => leftPadding + scale(d.start_date) - 5)
+      .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
       .attr('fill', ' #f7f7f7');
 
@@ -183,20 +170,23 @@ export class App extends React.Component {
       .append('text')
       .attr('class', 'labels')
       .text(d => d.label)
-      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
 
     const textUpdate = textCurrent.merge(textEntering);
 
     textUpdate
       .transition(sevenT)
-      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
 
     const xTranslationFromZoom =
       zoom_level === 1
         ? 0
-        : chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
+        : this.chart_width / 2 -
+          scale(midScreenDate) -
+          timeline_x -
+          this.leftPadding;
 
     this.setState(
       {
@@ -209,13 +199,14 @@ export class App extends React.Component {
   };
 
   move = num => {
-    const { timeline_x, chart_width, zoom_level, midScreenDate } = this.state;
+    const { timeline_x, zoom_level, midScreenDate } = this.state;
 
-    const lengthOfChart = chart_width * zoom_level;
+    const lengthOfChart = this.chart_width * zoom_level;
 
-    const reachedLeftEnd = timeline_x + num > chart_width / 2;
+    const reachedLeftEnd = timeline_x + num > this.chart_width / 2;
 
-    const reachedRightEnd = timeline_x + lengthOfChart + num < chart_width / 2;
+    const reachedRightEnd =
+      timeline_x + lengthOfChart + num < this.chart_width / 2;
     const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
     const newtimeline_x = timeline_x + moveValue;
 
@@ -273,7 +264,7 @@ export class App extends React.Component {
       const inverseScale = this.inverseScale();
 
       const newMidScreenDate = inverseScale(
-        this.state.chart_width / 2 - this.state.leftPadding
+        this.chart_width / 2 - this.leftPadding
       );
 
       const conditionalMidScreenDate =
@@ -287,29 +278,27 @@ export class App extends React.Component {
     });
   };
   calculateScale = () => {
-    const { chart_width, data, zoom_level, leftPadding } = this.state;
+    const { data, zoom_level } = this.state;
     const start_dates = data.map(d => d.start_date);
     const end_dates = data.map(d => d.end_date);
     return d3
       .scaleTime()
       .domain([d3.min(start_dates), d3.max(end_dates)])
-      .range([0, chart_width * zoom_level - leftPadding * 2]);
+      .range([0, this.chart_width * zoom_level - this.leftPadding * 2]);
   };
   inverseScale = () => {
-    const { chart_width, data, zoom_level, leftPadding } = this.state;
+    const { data, zoom_level } = this.state;
     const start_dates = data.map(d => d.start_date);
     const end_dates = data.map(d => d.end_date);
     return d3
       .scaleLinear()
-      .domain([0, chart_width * zoom_level - leftPadding * 2])
+      .domain([0, this.chart_width * zoom_level - this.leftPadding * 2])
       .range([d3.min(start_dates), d3.max(end_dates)]);
   };
   render() {
-    console.log(this.state.zoom_level);
     return (
       <div>
         <div id="chart" />
-
         <ButtonPanel zoom={this.zoom} move={this.move} />
         <Form addNewEvent={this.addNewEvent} />
       </div>
