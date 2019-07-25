@@ -170,13 +170,12 @@ export class App extends React.Component {
       .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
 
-    const xTranslationFromZoom =
-      zoom_level === 1
-        ? 0
-        : this.chart_width / 2 -
-          scale(midScreenDate) -
-          timeline_x -
-          this.leftPadding;
+    const xTranslationFromZoom = firstPageLoad
+      ? 0
+      : this.chart_width / 2 -
+        scale(midScreenDate) -
+        timeline_x -
+        this.leftPadding;
 
     this.setState(
       {
