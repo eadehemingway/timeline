@@ -273,10 +273,16 @@ export class App extends React.Component {
     this.setState({ data: newDataArr }, () => {
       const inverseScale = this.inverseScale();
 
-      const midScreenDate = inverseScale(
+      const newMidScreenDate = inverseScale(
         this.state.chart_width / 2 - this.state.leftPadding
       );
-      this.setState({ midScreenDate }, () => {
+
+      const conditionalMidScreenDate =
+        this.state.zoom_level === 1
+          ? newMidScreenDate
+          : this.state.midScreenDate;
+
+      this.setState({ midScreenDate: conditionalMidScreenDate }, () => {
         this.redraw();
       });
     });
