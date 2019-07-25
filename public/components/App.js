@@ -44,8 +44,7 @@ export class App extends React.Component {
       timeline_x: 0,
       zoom_level: 1,
       leftPadding: 50,
-      midScreenDate: 0,
-      xTranslationFromZoom: 0
+      midScreenDate: 0
     };
   }
 
@@ -199,27 +198,24 @@ export class App extends React.Component {
       .attr('x', d => leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
 
-    this.setState({ xTranslationFromZoom }, () => {
-      this.testPosition();
-    });
+    this.setState(
+      {
+        timeline_x: this.state.timeline_x + xTranslationFromZoom
+      },
+      () => {
+        this.positionTimeline();
+      }
+    );
   };
 
   move = num => {
-    const {
-      timeline_x,
-      chart_width,
-      zoom_level,
-      midScreenDate,
-      xTranslationFromZoom
-    } = this.state;
+    const { timeline_x, chart_width, zoom_level, midScreenDate } = this.state;
 
     const lengthOfChart = chart_width * zoom_level;
 
-    const reachedLeftEnd =
-      timeline_x + num + xTranslationFromZoom > chart_width / 2;
+    const reachedLeftEnd = timeline_x + num > chart_width / 2;
 
-    const reachedRightEnd =
-      timeline_x + lengthOfChart + num + xTranslationFromZoom < chart_width / 2;
+    const reachedRightEnd = timeline_x + lengthOfChart + num < chart_width / 2;
     // const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
     const moveValue = num; // I.E. REMOVE THE STOPS
     const newtimeline_x = timeline_x + moveValue;
@@ -246,12 +242,6 @@ export class App extends React.Component {
     });
   };
 
-  testPosition = () => {
-    const sevenT = this.getTransition();
-    d3.select('.timelineGroup')
-      .transition(sevenT)
-      .attr('transform', `translate(${this.state.xTranslationFromZoom} ,0)`);
-  };
   positionTimeline = () => {
     const sevenT = this.getTransition();
     d3.select('.timelineGroup')
