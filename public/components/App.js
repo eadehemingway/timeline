@@ -49,25 +49,6 @@ export class App extends React.Component {
     };
   }
 
-  getDataWithYVals = () => {
-    const { data } = this.state;
-
-    const sortedData = data.sort(d => d.start_date);
-    return sortedData.reduce((acc, d, i) => {
-      let y = 165;
-      if (i > 0) {
-        const prevData = acc[i - 1];
-        const isOverlap = prevData.end_date > d.start_date;
-        y = isOverlap ? prevData.y - 40 : 165;
-      }
-      const newObj = {
-        ...d,
-        y
-      };
-      return [...acc, newObj];
-    }, []);
-  };
-
   componentDidMount() {
     const { chart_height, chart_width, leftPadding } = this.state;
     const scale = this.calculateScale();
@@ -113,10 +94,21 @@ export class App extends React.Component {
   }
 
   update = () => {
-    const { leftPadding, xTranslationFromZoom } = this.state;
+    const {
+      leftPadding,
+      chart_width,
+      timeline_x,
+      midScreenDate,
+      zoom_level
+    } = this.state;
     const scale = this.calculateScale();
     const dataWithYVals = this.getDataWithYVals();
     const sevenT = this.getTransition();
+
+    const xTranslationFromZoom =
+      zoom_level === 1
+        ? 0
+        : chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
 
     // draw the xaxis again here so that it can update in relation to chanes in the scale.
     const x_axis = d3
@@ -127,7 +119,7 @@ export class App extends React.Component {
 
     d3.select('.axisGroup')
       .transition(sevenT)
-      .attr('transform', `translate(${leftPadding} 180)`)
+      .attr('transform', `translate(${leftPadding}, 180)`)
       .call(x_axis);
 
     const timelineGroup = d3.select('.timelineGroup');
@@ -159,15 +151,14 @@ export class App extends React.Component {
     const rectCurrent = eventGroupCurrent.selectAll('.eventRects');
 
     const rectUpdate = rectCurrent.merge(rectEntering);
-    console.log(xTranslationFromZoom);
+
     rectUpdate
       .transition(sevenT)
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => leftPadding + scale(d.start_date))
-      .attr('transform', `translate(0, 0)`);
+      .attr('x', d => leftPadding + scale(d.start_date));
 
     //----------------------------------------------------------------------
 
@@ -190,8 +181,7 @@ export class App extends React.Component {
       .attr('height', 20)
       .attr('x', d => leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
-      .attr('fill', ' #f7f7f7')
-      .attr('transform', `translate(0, 0)`);
+      .attr('fill', ' #f7f7f7');
 
     //----------------------------------------------------------------------
     const textCurrent = eventGroupCurrent.selectAll('.labels');
@@ -207,29 +197,11 @@ export class App extends React.Component {
     textUpdate
       .transition(sevenT)
       .attr('x', d => leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10)
-      .attr('transform', `translate(0, 0)`);
-  };
+      .attr('y', d => d.y - 10);
 
-  calculateScale = () => {
-    const { chart_width, data, zoom_level, leftPadding } = this.state;
-    const start_dates = data.map(d => d.start_date);
-    const end_dates = data.map(d => d.end_date);
-
-    return d3
-      .scaleTime()
-      .domain([d3.min(start_dates), d3.max(end_dates)])
-      .range([0, chart_width * zoom_level - leftPadding * 2]);
-  };
-
-  inverseScale = () => {
-    const { chart_width, data, zoom_level, leftPadding } = this.state;
-    const start_dates = data.map(d => d.start_date);
-    const end_dates = data.map(d => d.end_date);
-    return d3
-      .scaleLinear()
-      .domain([0, chart_width * zoom_level - leftPadding * 2])
-      .range([d3.min(start_dates), d3.max(end_dates)]);
+    this.setState({ xTranslationFromZoom }, () => {
+      this.testPosition();
+    });
   };
 
   move = num => {
@@ -240,7 +212,7 @@ export class App extends React.Component {
       midScreenDate,
       xTranslationFromZoom
     } = this.state;
-    const sevenT = this.getTransition();
+
     const lengthOfChart = chart_width * zoom_level;
 
     const reachedLeftEnd =
@@ -261,75 +233,76 @@ export class App extends React.Component {
     this.setState(
       { timeline_x: newtimeline_x, midScreenDate: newMidDate },
       () => {
-        d3.select('.timelineGroup')
-          .transition(sevenT)
-          .attr('transform', `translate(${this.state.timeline_x} ,0)`);
+        this.positionTimeline();
       }
     );
   };
 
-  getTransition = () => {
-    return d3.transition().duration(750);
-  };
   zoom = num => {
     const { zoom_level } = this.state;
     const new_zoom_level = zoom_level + num < 1 ? 1 : zoom_level + num;
     this.setState({ zoom_level: new_zoom_level }, () => {
-      const sevenT = this.getTransition();
-      const {
-        leftPadding,
-        timeline_x,
-        chart_width,
-        midScreenDate
-      } = this.state;
-
-      const scale = this.calculateScale();
-
-      const xTranslationFromZoom =
-        chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
-
-      const x_axis = d3
-        .axisBottom()
-        .scale(scale)
-        .ticks(5)
-        .tickFormat(d3.timeFormat('%Y-%m-%d'));
-
-      d3.select('.axisGroup')
-        .transition(sevenT)
-        .call(x_axis)
-        .attr('transform', `translate(${xTranslationFromZoom}, 180)`);
-
-      const rect = d3.selectAll('.eventRects');
-      const eventGroup = d3.selectAll('.eventGroups');
-
-      rect
-        .transition(sevenT)
-        .attr('width', d => {
-          const width = scale(d.end_date) - scale(d.start_date);
-          return width > 0 ? width : 1;
-        })
-        .attr('x', d => scale(d.start_date))
-        .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
-
-      d3.selectAll('.textBackground')
-        .transition(sevenT)
-        .attr('x', d => scale(d.start_date) - 5)
-        .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
-
-      d3.selectAll('.labels')
-        .transition(sevenT)
-        .attr('x', d => scale(d.start_date))
-        .attr('transform', `translate(${xTranslationFromZoom}, 0)`);
-
-      this.setState({ xTranslationFromZoom });
+      this.update();
     });
   };
 
+  testPosition = () => {
+    const sevenT = this.getTransition();
+    d3.select('.timelineGroup')
+      .transition(sevenT)
+      .attr('transform', `translate(${this.state.xTranslationFromZoom} ,0)`);
+  };
+  positionTimeline = () => {
+    const sevenT = this.getTransition();
+    d3.select('.timelineGroup')
+      .transition(sevenT)
+      .attr('transform', `translate(${this.state.timeline_x} ,0)`);
+  };
+  getTransition = () => {
+    return d3.transition().duration(750);
+  };
+  getDataWithYVals = () => {
+    const { data } = this.state;
+
+    const sortedData = data.sort(d => d.start_date);
+    return sortedData.reduce((acc, d, i) => {
+      let y = 165;
+      if (i > 0) {
+        const prevData = acc[i - 1];
+        const isOverlap = prevData.end_date > d.start_date;
+        y = isOverlap ? prevData.y - 40 : 165;
+      }
+      const newObj = {
+        ...d,
+        y
+      };
+      return [...acc, newObj];
+    }, []);
+  };
   addNewEvent = newEvent => {
     const newDataArr = [...this.state.data, newEvent];
     this.setState({ data: newDataArr }, () => {
       this.update();
     });
+  };
+  calculateScale = () => {
+    const { chart_width, data, zoom_level, leftPadding } = this.state;
+    const start_dates = data.map(d => d.start_date);
+    const end_dates = data.map(d => d.end_date);
+
+    return d3
+      .scaleTime()
+      .domain([d3.min(start_dates), d3.max(end_dates)])
+      .range([0, chart_width * zoom_level - leftPadding * 2]);
+  };
+  inverseScale = () => {
+    const { chart_width, data, zoom_level, leftPadding } = this.state;
+    const start_dates = data.map(d => d.start_date);
+    const end_dates = data.map(d => d.end_date);
+    return d3
+      .scaleLinear()
+      .domain([0, chart_width * zoom_level - leftPadding * 2])
+      .range([d3.min(start_dates), d3.max(end_dates)]);
   };
   render() {
     return (
