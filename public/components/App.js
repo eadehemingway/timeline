@@ -129,21 +129,23 @@ export class App extends React.Component {
       .attr('y', d => d.y)
       .attr('fill', 'LightSteelBlue');
 
-    const rectCurrent = eventGroupCurrent.selectAll('.eventRects');
+    const rectCurrent = eventGroupCurrent.select('.eventRects');
 
     const rectUpdate = rectCurrent.merge(rectEntering);
 
+    console.log(rectUpdate);
     rectUpdate
       .transition(sevenT)
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => this.leftPadding + scale(d.start_date));
+      .attr('x', d => this.leftPadding + scale(d.start_date))
+      .attr('fill', 'red');
 
     //----------------------------------------------------------------------
 
-    const textRectCurrent = eventGroupCurrent.selectAll('.textBackground');
+    const textRectCurrent = eventGroupCurrent.select('.textBackground');
 
     const textRectEntering = eventGroupEntering
       .append('rect')
@@ -165,7 +167,7 @@ export class App extends React.Component {
       .attr('fill', ' #f7f7f7');
 
     //----------------------------------------------------------------------
-    const textCurrent = eventGroupCurrent.selectAll('.labels');
+    const textCurrent = eventGroupCurrent.select('.labels');
     const textEntering = eventGroupEntering
       .append('text')
       .attr('class', 'labels')
