@@ -113,7 +113,7 @@ export class App extends React.Component {
   }
 
   update = () => {
-    const { leftPadding } = this.state;
+    const { leftPadding, xTranslationFromZoom } = this.state;
     const scale = this.calculateScale();
     const dataWithYVals = this.getDataWithYVals();
     const sevenT = this.getTransition();
@@ -159,14 +159,15 @@ export class App extends React.Component {
     const rectCurrent = eventGroupCurrent.selectAll('.eventRects');
 
     const rectUpdate = rectCurrent.merge(rectEntering);
-
+    console.log(xTranslationFromZoom);
     rectUpdate
       .transition(sevenT)
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => leftPadding + scale(d.start_date));
+      .attr('x', d => leftPadding + scale(d.start_date))
+      .attr('transform', `translate(0, 0)`);
 
     //----------------------------------------------------------------------
 
@@ -189,7 +190,8 @@ export class App extends React.Component {
       .attr('height', 20)
       .attr('x', d => leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
-      .attr('fill', ' #f7f7f7');
+      .attr('fill', ' #f7f7f7')
+      .attr('transform', `translate(0, 0)`);
 
     //----------------------------------------------------------------------
     const textCurrent = eventGroupCurrent.selectAll('.labels');
@@ -205,7 +207,8 @@ export class App extends React.Component {
     textUpdate
       .transition(sevenT)
       .attr('x', d => leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10);
+      .attr('y', d => d.y - 10)
+      .attr('transform', `translate(0, 0)`);
   };
 
   calculateScale = () => {
