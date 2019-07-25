@@ -123,7 +123,8 @@ export class App extends React.Component {
       .append('rect')
       .attr('height', 10)
       .attr('class', 'eventRects')
-      .attr('y', d => d.y)
+
+      .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('fill', 'LightSteelBlue');
 
     const rectCurrent = eventGroupCurrent.select('.eventRects');
@@ -136,7 +137,8 @@ export class App extends React.Component {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => this.leftPadding + scale(d.start_date));
+      .attr('x', d => this.leftPadding + scale(d.start_date))
+      .attr('y', d => d.y);
 
     //----------------------------------------------------------------------
 
@@ -146,7 +148,7 @@ export class App extends React.Component {
       .append('rect')
       .attr('class', 'textBackground')
       .attr('height', 20)
-      .attr('y', d => d.y - 25)
+      .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
       .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
     const textRectUpdate = textRectCurrent.merge(textRectEntering);
@@ -154,6 +156,7 @@ export class App extends React.Component {
     textRectUpdate
       .transition(transitionFunc)
       .attr('width', d => d.label.length * 10)
+      .attr('y', d => d.y - 25)
       .attr('x', d => this.leftPadding + scale(d.start_date) - 5);
 
     //----------------------------------------------------------------------
@@ -161,6 +164,7 @@ export class App extends React.Component {
     const textEntering = eventGroupEntering
       .append('text')
       .attr('class', 'labels')
+      .attr('x', d => this.leftPadding + scale(d.start_date))
       .text(d => d.label);
 
     const textUpdate = textCurrent.merge(textEntering);
