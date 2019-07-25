@@ -59,6 +59,7 @@ export class App extends React.Component {
       .attr('y1', 0)
       .attr('y2', this.chart_height)
       .attr('stroke', 'grey')
+      .attr('stroke-dasharray', 4)
       .attr('stroke-width', 1);
 
     svg
