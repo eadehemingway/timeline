@@ -82,14 +82,16 @@ export class App extends React.Component {
 
     const midScreenDate = inverseScale(this.chart_width / 2 - this.leftPadding);
     this.setState({ midScreenDate });
-    this.redraw();
+    this.redraw(true);
   }
 
-  redraw = () => {
+  redraw = (firstPageLoad = false) => {
     const { timeline_x, midScreenDate, zoom_level } = this.state;
     const scale = this.calculateScale();
     const dataWithYVals = this.getDataWithYVals();
-    const sevenT = this.getTransition();
+    const transitionFunc = firstPageLoad
+      ? this.noTransition()
+      : this.getTransition();
 
     // draw the xaxis again here so that it can update in relation to chanes in the scale.
     const x_axis = d3
@@ -99,7 +101,7 @@ export class App extends React.Component {
       .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
     d3.select('.axisGroup')
-      .transition(sevenT)
+      .transition(transitionFunc)
       .attr('transform', `translate(${this.leftPadding}, 180)`)
       .call(x_axis);
 
@@ -119,13 +121,8 @@ export class App extends React.Component {
     //----------------------------------------------------------------------
     const rectEntering = eventGroupEntering
       .append('rect')
-      .attr('width', d => {
-        const width = scale(d.end_date) - scale(d.start_date);
-        return width > 0 ? width : 1;
-      })
       .attr('height', 10)
       .attr('class', 'eventRects')
-      .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => d.y)
       .attr('fill', 'LightSteelBlue');
 
@@ -133,15 +130,13 @@ export class App extends React.Component {
 
     const rectUpdate = rectCurrent.merge(rectEntering);
 
-    console.log(rectUpdate);
     rectUpdate
-      .transition(sevenT)
+      .transition(transitionFunc)
       .attr('width', d => {
         const width = scale(d.end_date) - scale(d.start_date);
         return width > 0 ? width : 1;
       })
-      .attr('x', d => this.leftPadding + scale(d.start_date))
-      .attr('fill', 'red');
+      .attr('x', d => this.leftPadding + scale(d.start_date));
 
     //----------------------------------------------------------------------
 
@@ -150,35 +145,28 @@ export class App extends React.Component {
     const textRectEntering = eventGroupEntering
       .append('rect')
       .attr('class', 'textBackground')
-      .attr('width', d => d.label.length * 10)
       .attr('height', 20)
-      .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
       .attr('y', d => d.y - 25)
       .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
     const textRectUpdate = textRectCurrent.merge(textRectEntering);
 
     textRectUpdate
-      .transition(sevenT)
+      .transition(transitionFunc)
       .attr('width', d => d.label.length * 10)
-      .attr('height', 20)
-      .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
-      .attr('y', d => d.y - 25)
-      .attr('fill', ' #f7f7f7');
+      .attr('x', d => this.leftPadding + scale(d.start_date) - 5);
 
     //----------------------------------------------------------------------
     const textCurrent = eventGroupCurrent.select('.labels');
     const textEntering = eventGroupEntering
       .append('text')
       .attr('class', 'labels')
-      .text(d => d.label)
-      .attr('x', d => this.leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10);
+      .text(d => d.label);
 
     const textUpdate = textCurrent.merge(textEntering);
 
     textUpdate
-      .transition(sevenT)
+      .transition(transitionFunc)
       .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
 
@@ -235,13 +223,16 @@ export class App extends React.Component {
   };
 
   positionTimeline = () => {
-    const sevenT = this.getTransition();
+    const transitionFunc = this.getTransition();
     d3.select('.timelineGroup')
-      .transition(sevenT)
+      .transition(transitionFunc)
       .attr('transform', `translate(${this.state.timeline_x} ,0)`);
   };
   getTransition = () => {
     return d3.transition().duration(750);
+  };
+  noTransition = () => {
+    return d3.transition().duration(0);
   };
   getDataWithYVals = () => {
     const { data } = this.state;
