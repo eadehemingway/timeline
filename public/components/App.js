@@ -104,11 +104,6 @@ export class App extends React.Component {
     const dataWithYVals = this.getDataWithYVals();
     const sevenT = this.getTransition();
 
-    const xTranslationFromZoom =
-      zoom_level === 1
-        ? 0
-        : chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
-
     // draw the xaxis again here so that it can update in relation to chanes in the scale.
     const x_axis = d3
       .axisBottom()
@@ -198,6 +193,11 @@ export class App extends React.Component {
       .attr('x', d => leftPadding + scale(d.start_date))
       .attr('y', d => d.y - 10);
 
+    const xTranslationFromZoom =
+      zoom_level === 1
+        ? 0
+        : chart_width / 2 - scale(midScreenDate) - timeline_x - leftPadding;
+
     this.setState(
       {
         timeline_x: this.state.timeline_x + xTranslationFromZoom
@@ -253,7 +253,6 @@ export class App extends React.Component {
   };
   getDataWithYVals = () => {
     const { data } = this.state;
-
     const sortedData = data.sort(d => d.start_date);
     return sortedData.reduce((acc, d, i) => {
       let y = 165;
@@ -279,7 +278,6 @@ export class App extends React.Component {
     const { chart_width, data, zoom_level, leftPadding } = this.state;
     const start_dates = data.map(d => d.start_date);
     const end_dates = data.map(d => d.end_date);
-
     return d3
       .scaleTime()
       .domain([d3.min(start_dates), d3.max(end_dates)])
