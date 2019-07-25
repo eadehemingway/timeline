@@ -216,8 +216,7 @@ export class App extends React.Component {
     const reachedLeftEnd = timeline_x + num > chart_width / 2;
 
     const reachedRightEnd = timeline_x + lengthOfChart + num < chart_width / 2;
-    // const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
-    const moveValue = num; // I.E. REMOVE THE STOPS
+    const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
     const newtimeline_x = timeline_x + moveValue;
 
     const scale = this.calculateScale();
