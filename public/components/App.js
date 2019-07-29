@@ -30,7 +30,7 @@ export class App extends React.Component {
           label: 'two',
           start_date: new Date(2001, 0, 0),
           end_date: new Date(2003, 0, 0),
-          hierarchy_level: 2
+          hierarchy_level: 1
         },
         {
           id: 4,
@@ -86,7 +86,7 @@ export class App extends React.Component {
       .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
     d3.select('.axisGroup')
-      .attr('transform', `translate(${this.leftPadding} 180)`)
+      .attr('transform', `translate(${this.leftPadding} 230)`)
       .call(x_axis);
 
     const inverseScale = this.inverseScale();
@@ -97,9 +97,9 @@ export class App extends React.Component {
   }
 
   redraw = (firstPageLoad = false) => {
-    const { timeline_x, midScreenDate } = this.state;
+    const { timeline_x, midScreenDate, zoom_level } = this.state;
     const scale = this.getScale();
-    const dataWithYVals = this.getDataWithYVals();
+
     const transitionFunc = firstPageLoad
       ? this.noTransition()
       : this.getTransition();
@@ -113,21 +113,28 @@ export class App extends React.Component {
 
     d3.select('.axisGroup')
       .transition(transitionFunc)
-      .attr('transform', `translate(${this.leftPadding}, 180)`)
+      .attr('transform', `translate(${this.leftPadding}, 230)`)
       .call(x_axis);
 
     const timelineGroup = d3.select('.timelineGroup');
     //----------------------------------------------------------------------
+    const dataWithYVals = this.getDataWithYVals();
+    const filteredData = dataWithYVals.filter(
+      d => d.hierarchy_level <= zoom_level
+    );
     const eventGroupCurrent = timelineGroup
       .selectAll('.eventGroups')
-      .data(dataWithYVals, d => d.id);
+      .data(filteredData, d => d.id);
 
     const eventGroupEntering = eventGroupCurrent
       .enter()
       .append('g')
       .attr('class', 'eventGroups');
 
-    eventGroupCurrent.exit().remove();
+    eventGroupCurrent
+      .exit()
+      .transition(this.getTransition())
+      .remove();
 
     //----------------------------------------------------------------------
     const rectEntering = eventGroupEntering
@@ -249,20 +256,15 @@ export class App extends React.Component {
   noTransition = () => {
     return d3.transition().duration(0);
   };
-  getDataWithYVals = () => {
-    const { data, zoom_level } = this.state;
-    const sortedData = data.sort(d => d.start_date);
-    const filteredData = sortedData.filter(
-      d => d.hierarchy_level <= zoom_level
-    );
-    // const levelTwoData  = data.filter(d=> d.hierarchy_level === 2)
-    // const levelThreeData  = data.filter(d=> d.hierarchy_level === 3)
-    return filteredData.reduce((acc, d, i) => {
-      let y = 165;
+  getYValsForLevel = (data, hierarchyLevel, initialYVal) => {
+    const levelData = data.filter(d => d.hierarchy_level === hierarchyLevel);
+
+    return levelData.reduce((acc, d, i) => {
+      let y = initialYVal;
       if (i > 0) {
         const prevData = acc[i - 1];
         const isOverlap = prevData.end_date > d.start_date;
-        y = isOverlap ? prevData.y - 40 : 165;
+        y = isOverlap ? prevData.y - 40 : y;
       }
       const newObj = {
         ...d,
@@ -270,6 +272,15 @@ export class App extends React.Component {
       };
       return [...acc, newObj];
     }, []);
+  };
+  getDataWithYVals = () => {
+    const { data, zoom_level } = this.state;
+
+    const sortedData = data.sort(d => d.start_date);
+    const one = this.getYValsForLevel(sortedData, 1, 80);
+    const two = this.getYValsForLevel(sortedData, 2, 120);
+    const three = this.getYValsForLevel(sortedData, 3, 165);
+    return [...one, ...two, ...three];
   };
   addNewEvent = newEvent => {
     const { data } = this.state;
