@@ -7,6 +7,9 @@ export class App extends React.Component {
   leftPadding = 50;
   chart_width = 800;
   chart_height = 400;
+  level_one_y = 80;
+  level_two_y = 120;
+  level_three_y = 165;
   constructor(props) {
     super(props);
     this.state = {
@@ -45,6 +48,20 @@ export class App extends React.Component {
           start_date: new Date(2001, 0, 0),
           end_date: new Date(2006, 0, 0),
           hierarchy_level: 1
+        },
+        {
+          id: 6,
+          label: 'TEST',
+          start_date: new Date(1996, 0, 0),
+          end_date: new Date(1996, 0, 0),
+          hierarchy_level: 1
+        },
+        {
+          id: 7,
+          label: 'nnnn',
+          start_date: new Date(2002, 0, 0),
+          end_date: new Date(2003, 0, 0),
+          hierarchy_level: 2
         }
       ],
 
@@ -99,7 +116,8 @@ export class App extends React.Component {
   redraw = (firstPageLoad = false) => {
     const { timeline_x, midScreenDate, zoom_level } = this.state;
     const scale = this.getScale();
-
+    const numLevelsShowing = zoom_level > 3 ? 3 : zoom_level;
+    const levelHeight = 25;
     const transitionFunc = firstPageLoad
       ? this.noTransition()
       : this.getTransition();
@@ -156,7 +174,10 @@ export class App extends React.Component {
         return width > 0 ? width : 1;
       })
       .attr('x', d => this.leftPadding + scale(d.start_date))
-      .attr('y', d => d.y);
+      .attr('y', d => {
+        const yOffset = (numLevelsShowing - d.hierarchy_level) * levelHeight;
+        return d.y - yOffset;
+      });
 
     //----------------------------------------------------------------------
 
@@ -165,7 +186,7 @@ export class App extends React.Component {
     const textRectEntering = eventGroupEntering
       .append('rect')
       .attr('class', 'textBackground')
-      .attr('height', 20)
+      .attr('height', d => `${20 / d.hierarchy_level}px`)
       .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
       .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
@@ -174,7 +195,11 @@ export class App extends React.Component {
     textRectUpdate
       .transition(transitionFunc)
       .attr('width', d => d.label.length * 10)
-      .attr('y', d => d.y - 25)
+      .attr('y', d => {
+        const yOffset = (numLevelsShowing - d.hierarchy_level) * levelHeight;
+
+        return d.y - 25 - yOffset;
+      })
       .attr('x', d => this.leftPadding + scale(d.start_date) - 5);
 
     //----------------------------------------------------------------------
@@ -190,7 +215,10 @@ export class App extends React.Component {
     textUpdate
       .transition(transitionFunc)
       .attr('x', d => this.leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10)
+      .attr('y', d => {
+        const yOffset = (numLevelsShowing - d.hierarchy_level) * levelHeight;
+        return d.y - yOffset - 10;
+      })
       .style('font-size', d => `${20 / d.hierarchy_level}px`);
 
     const xTranslationFromZoom = firstPageLoad
@@ -256,11 +284,13 @@ export class App extends React.Component {
   noTransition = () => {
     return d3.transition().duration(0);
   };
-  getYValsForLevel = (data, hierarchyLevel, initialYVal) => {
-    const levelData = data.filter(d => d.hierarchy_level === hierarchyLevel);
+  getYValsForLevel = (data, hierarchyLevel) => {
+    const levelData = data
+      .filter(d => d.hierarchy_level === hierarchyLevel)
+      .sort((a, b) => a.start_date - b.start_date);
 
     return levelData.reduce((acc, d, i) => {
-      let y = initialYVal;
+      let y = 180;
       if (i > 0) {
         const prevData = acc[i - 1];
         const isOverlap = prevData.end_date > d.start_date;
@@ -274,12 +304,11 @@ export class App extends React.Component {
     }, []);
   };
   getDataWithYVals = () => {
-    const { data, zoom_level } = this.state;
+    const { data } = this.state;
 
-    const sortedData = data.sort(d => d.start_date);
-    const one = this.getYValsForLevel(sortedData, 1, 80);
-    const two = this.getYValsForLevel(sortedData, 2, 120);
-    const three = this.getYValsForLevel(sortedData, 3, 165);
+    const one = this.getYValsForLevel(data, 1);
+    const two = this.getYValsForLevel(data, 2);
+    const three = this.getYValsForLevel(data, 3);
     return [...one, ...two, ...three];
   };
   addNewEvent = newEvent => {
