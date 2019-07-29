@@ -45,7 +45,7 @@ export class App extends React.Component {
   }
 
   componentDidMount() {
-    const scale = this.calculateScale();
+    const scale = this.getScale();
     const svg = d3
       .select('#chart')
       .append('svg')
@@ -87,8 +87,8 @@ export class App extends React.Component {
   }
 
   redraw = (firstPageLoad = false) => {
-    const { timeline_x, midScreenDate, zoom_level } = this.state;
-    const scale = this.calculateScale();
+    const { timeline_x, midScreenDate } = this.state;
+    const scale = this.getScale();
     const dataWithYVals = this.getDataWithYVals();
     const transitionFunc = firstPageLoad
       ? this.noTransition()
@@ -204,7 +204,7 @@ export class App extends React.Component {
     const moveValue = reachedLeftEnd || reachedRightEnd ? 0 : num;
     const newtimeline_x = timeline_x + moveValue;
 
-    const scale = this.calculateScale();
+    const scale = this.getScale();
     const inverseScale = this.inverseScale();
     const prevMidScreenCoordinate = scale(midScreenDate);
     const newMidScreenCoordinate = prevMidScreenCoordinate - moveValue;
@@ -257,13 +257,17 @@ export class App extends React.Component {
   };
   addNewEvent = newEvent => {
     const newDataArr = [...this.state.data, newEvent];
-    this.setState({ data: newDataArr }, () => {
-      const inverseScale = this.inverseScale();
+    // work out the new zoomlevel so that when we add a new event, and the scale changes we feel like we are zoomed in the same amount as before
+    const oldScale = this.getScale();
+    const endPointOldScale = oldScale(newEvent.end_date);
+    const zoom = (endPointOldScale + 2 * this.leftPadding) / this.chart_width;
 
+    this.setState({ data: newDataArr, zoom_level: zoom }, () => {
+      // work out the new midscreenDate so that we stay zoomed in on same date
+      const inverseScale = this.inverseScale();
       const newMidScreenDate = inverseScale(
         this.chart_width / 2 - this.leftPadding
       );
-
       const conditionalMidScreenDate =
         this.state.zoom_level === 1
           ? newMidScreenDate
@@ -274,7 +278,7 @@ export class App extends React.Component {
       });
     });
   };
-  calculateScale = () => {
+  getScale = () => {
     const { data, zoom_level } = this.state;
     const start_dates = data.map(d => d.start_date);
     const end_dates = data.map(d => d.end_date);
