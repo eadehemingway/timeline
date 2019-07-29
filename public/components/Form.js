@@ -4,7 +4,8 @@ export class Form extends React.Component {
   state = {
     label: '',
     start_date: '',
-    end_date: ''
+    end_date: '',
+    hierarchy_level: ''
   };
 
   render() {
@@ -38,7 +39,8 @@ export class Form extends React.Component {
             this.props.addNewEvent({
               label: 'NEWWWWWWW',
               start_date: new Date(2030, 0, 0),
-              end_date: new Date(2032, 0, 0)
+              end_date: new Date(2032, 0, 0),
+              hierarchy_level: 2
             })
           }
         >
