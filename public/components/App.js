@@ -12,29 +12,39 @@ export class App extends React.Component {
     this.state = {
       data: [
         {
+          id: 1,
           label: 'one',
           start_date: new Date(1992, 0, 0),
-          end_date: new Date(1992, 0, 0)
+          end_date: new Date(1992, 0, 0),
+          hierarchy_level: 1
         },
         {
+          id: 2,
           label: 'close',
           start_date: new Date(1992, 1, 0),
-          end_date: new Date(1992, 1, 0)
+          end_date: new Date(1992, 1, 0),
+          hierarchy_level: 2
         },
         {
+          id: 3,
           label: 'two',
           start_date: new Date(2001, 0, 0),
-          end_date: new Date(2003, 0, 0)
+          end_date: new Date(2003, 0, 0),
+          hierarchy_level: 2
         },
         {
+          id: 4,
           label: 'half',
           start_date: new Date(2001, 0, 0),
-          end_date: new Date(2005, 0, 0)
+          end_date: new Date(2005, 0, 0),
+          hierarchy_level: 3
         },
         {
+          id: 5,
           label: 'more',
           start_date: new Date(2001, 0, 0),
-          end_date: new Date(2006, 0, 0)
+          end_date: new Date(2006, 0, 0),
+          hierarchy_level: 1
         }
       ],
 
@@ -110,7 +120,7 @@ export class App extends React.Component {
     //----------------------------------------------------------------------
     const eventGroupCurrent = timelineGroup
       .selectAll('.eventGroups')
-      .data(dataWithYVals);
+      .data(dataWithYVals, d => d.id);
 
     const eventGroupEntering = eventGroupCurrent
       .enter()
@@ -173,7 +183,8 @@ export class App extends React.Component {
     textUpdate
       .transition(transitionFunc)
       .attr('x', d => this.leftPadding + scale(d.start_date))
-      .attr('y', d => d.y - 10);
+      .attr('y', d => d.y - 10)
+      .style('font-size', d => `${20 / d.hierarchy_level}px`);
 
     const xTranslationFromZoom = firstPageLoad
       ? 0
@@ -239,9 +250,14 @@ export class App extends React.Component {
     return d3.transition().duration(0);
   };
   getDataWithYVals = () => {
-    const { data } = this.state;
+    const { data, zoom_level } = this.state;
     const sortedData = data.sort(d => d.start_date);
-    return sortedData.reduce((acc, d, i) => {
+    const filteredData = sortedData.filter(
+      d => d.hierarchy_level <= zoom_level
+    );
+    // const levelTwoData  = data.filter(d=> d.hierarchy_level === 2)
+    // const levelThreeData  = data.filter(d=> d.hierarchy_level === 3)
+    return filteredData.reduce((acc, d, i) => {
       let y = 165;
       if (i > 0) {
         const prevData = acc[i - 1];
@@ -256,7 +272,11 @@ export class App extends React.Component {
     }, []);
   };
   addNewEvent = newEvent => {
-    const newDataArr = [...this.state.data, newEvent];
+    const { data } = this.state;
+    const lastId = data[data.length - 1].id;
+    const newEventWithId = { ...newEvent, id: lastId + 1 };
+    const newDataArr = [...data, newEventWithId];
+
     // work out the new zoomlevel so that when we add a new event, and the scale changes we feel like we are zoomed in the same amount as before
     const oldScale = this.getScale();
     const endPointOldScale = oldScale(newEvent.end_date);
