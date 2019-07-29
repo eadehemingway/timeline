@@ -16,53 +16,53 @@ export class App extends React.Component {
       data: [
         {
           id: 1,
-          label: 'one',
-          start_date: new Date(1992, 0, 0),
-          end_date: new Date(1992, 0, 0),
+          label: '1900',
+          start_date: new Date(1900, 0, 0),
+          end_date: new Date(1900, 0, 0),
           hierarchy_level: 1
         },
         {
           id: 2,
-          label: 'close',
-          start_date: new Date(1992, 1, 0),
-          end_date: new Date(1992, 1, 0),
-          hierarchy_level: 2
+          label: '2000',
+          start_date: new Date(2000, 1, 0),
+          end_date: new Date(2000, 1, 0),
+          hierarchy_level: 1
         },
         {
           id: 3,
-          label: 'two',
-          start_date: new Date(2001, 0, 0),
-          end_date: new Date(2003, 0, 0),
-          hierarchy_level: 1
+          label: 'WW1',
+          start_date: new Date(1914, 0, 0),
+          end_date: new Date(1918, 0, 0),
+          hierarchy_level: 2
         },
         {
           id: 4,
-          label: 'half',
-          start_date: new Date(2001, 0, 0),
-          end_date: new Date(2005, 0, 0),
-          hierarchy_level: 3
+          label: 'WW2',
+          start_date: new Date(1939, 0, 0),
+          end_date: new Date(1945, 0, 0),
+          hierarchy_level: 2
         },
         {
           id: 5,
-          label: 'more',
-          start_date: new Date(2001, 0, 0),
-          end_date: new Date(2006, 0, 0),
+          label: 'now',
+          start_date: new Date(2019, 7, 0),
+          end_date: new Date(2019, 7, 0),
           hierarchy_level: 1
-        },
-        {
-          id: 6,
-          label: 'TEST',
-          start_date: new Date(1996, 0, 0),
-          end_date: new Date(1996, 0, 0),
-          hierarchy_level: 1
-        },
-        {
-          id: 7,
-          label: 'nnnn',
-          start_date: new Date(2002, 0, 0),
-          end_date: new Date(2003, 0, 0),
-          hierarchy_level: 2
         }
+        // {
+        //   id: 6,
+        //   label: 'TEST',
+        //   start_date: new Date(1996, 0, 0),
+        //   end_date: new Date(1996, 0, 0),
+        //   hierarchy_level: 1
+        // },
+        // {
+        //   id: 7,
+        //   label: 'nnnn',
+        //   start_date: new Date(2002, 0, 0),
+        //   end_date: new Date(2003, 0, 0),
+        //   hierarchy_level: 2
+        // }
       ],
 
       timeline_x: 0,
@@ -115,7 +115,7 @@ export class App extends React.Component {
   redraw = (firstPageLoad = false) => {
     const { timeline_x, midScreenDate, zoom_level } = this.state;
     const scale = this.getScale();
-    const numLevelsShowing = zoom_level > 3 ? 3 : zoom_level;
+    const numLevelsShowing = zoom_level > 3 ? 3 : zoom_level + 1;
 
     const transitionFunc = firstPageLoad
       ? this.noTransition()
@@ -137,7 +137,8 @@ export class App extends React.Component {
     //----------------------------------------------------------------------
     const dataWithYVals = this.getDataWithYVals();
     const filteredData = dataWithYVals.filter(
-      d => d.hierarchy_level <= zoom_level
+      // says show two levels on first level
+      d => d.hierarchy_level <= zoom_level + 1
     );
     const eventGroupCurrent = timelineGroup
       .selectAll('.eventGroups')
