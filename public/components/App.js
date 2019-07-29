@@ -7,9 +7,9 @@ export class App extends React.Component {
   leftPadding = 50;
   chart_width = 800;
   chart_height = 400;
-  level_one_y = 80;
-  level_two_y = 120;
-  level_three_y = 165;
+  axis_y = 230;
+  level_height = 30;
+  rect_height = 10;
   constructor(props) {
     super(props);
     this.state = {
@@ -86,8 +86,7 @@ export class App extends React.Component {
       .attr('y1', 0)
       .attr('y2', this.chart_height)
       .attr('stroke', 'grey')
-      .attr('stroke-dasharray', 4)
-      .attr('stroke-width', 1);
+      .attr('stroke-dasharray', 4);
 
     svg
       .append('g')
@@ -103,7 +102,7 @@ export class App extends React.Component {
       .tickFormat(d3.timeFormat('%Y-%m-%d'));
 
     d3.select('.axisGroup')
-      .attr('transform', `translate(${this.leftPadding} 230)`)
+      .attr('transform', `translate(${this.leftPadding}, ${this.axis_y})`)
       .call(x_axis);
 
     const inverseScale = this.inverseScale();
@@ -117,7 +116,7 @@ export class App extends React.Component {
     const { timeline_x, midScreenDate, zoom_level } = this.state;
     const scale = this.getScale();
     const numLevelsShowing = zoom_level > 3 ? 3 : zoom_level;
-    const levelHeight = 25;
+
     const transitionFunc = firstPageLoad
       ? this.noTransition()
       : this.getTransition();
@@ -131,7 +130,7 @@ export class App extends React.Component {
 
     d3.select('.axisGroup')
       .transition(transitionFunc)
-      .attr('transform', `translate(${this.leftPadding}, 230)`)
+      .attr('transform', `translate(${this.leftPadding}, ${this.axis_y})`)
       .call(x_axis);
 
     const timelineGroup = d3.select('.timelineGroup');
@@ -157,7 +156,7 @@ export class App extends React.Component {
     //----------------------------------------------------------------------
     const rectEntering = eventGroupEntering
       .append('rect')
-      .attr('height', 10)
+      .attr('height', this.rect_height)
       .attr('class', 'eventRects')
 
       .attr('x', d => this.leftPadding + scale(d.start_date))
@@ -175,38 +174,42 @@ export class App extends React.Component {
       })
       .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => {
-        const yOffset = (numLevelsShowing - d.hierarchy_level) * levelHeight;
+        const yOffset =
+          (numLevelsShowing - d.hierarchy_level) * this.level_height;
         return d.y - yOffset;
       });
 
     //----------------------------------------------------------------------
 
     const textRectCurrent = eventGroupCurrent.select('.textBackground');
-
+    const textPadding = 5;
+    const maxFontSize = 20;
     const textRectEntering = eventGroupEntering
       .append('rect')
       .attr('class', 'textBackground')
-      .attr('height', d => `${20 / d.hierarchy_level}px`)
-      .attr('x', d => this.leftPadding + scale(d.start_date) - 5)
+      .attr('height', d => `${maxFontSize / d.hierarchy_level}px`)
+      .attr('x', d => this.leftPadding + scale(d.start_date) - textPadding)
       .attr('fill', ' #f7f7f7'); // repeating this stuff for enter and update because we want it to not transition on page load
 
     const textRectUpdate = textRectCurrent.merge(textRectEntering);
-
+    const letterWidth = 15;
     textRectUpdate
       .transition(transitionFunc)
-      .attr('width', d => d.label.length * 10)
+      .attr('width', d => d.label.length * letterWidth)
       .attr('y', d => {
-        const yOffset = (numLevelsShowing - d.hierarchy_level) * levelHeight;
+        const yOffset =
+          (numLevelsShowing - d.hierarchy_level) * this.level_height;
 
-        return d.y - 25 - yOffset;
+        return d.y - maxFontSize / d.hierarchy_level - yOffset;
       })
-      .attr('x', d => this.leftPadding + scale(d.start_date) - 5);
+      .attr('x', d => this.leftPadding + scale(d.start_date) - textPadding);
 
     //----------------------------------------------------------------------
     const textCurrent = eventGroupCurrent.select('.labels');
     const textEntering = eventGroupEntering
       .append('text')
       .attr('class', 'labels')
+      .attr('alignment-baseline', 'hanging')
       .attr('x', d => this.leftPadding + scale(d.start_date))
       .text(d => d.label);
 
@@ -216,10 +219,11 @@ export class App extends React.Component {
       .transition(transitionFunc)
       .attr('x', d => this.leftPadding + scale(d.start_date))
       .attr('y', d => {
-        const yOffset = (numLevelsShowing - d.hierarchy_level) * levelHeight;
-        return d.y - yOffset - 10;
+        const yOffset =
+          (numLevelsShowing - d.hierarchy_level) * this.level_height;
+        return d.y - yOffset - maxFontSize / d.hierarchy_level;
       })
-      .style('font-size', d => `${20 / d.hierarchy_level}px`);
+      .style('font-size', d => `${maxFontSize / d.hierarchy_level}px`);
 
     const xTranslationFromZoom = firstPageLoad
       ? 0
@@ -288,13 +292,14 @@ export class App extends React.Component {
     const levelData = data
       .filter(d => d.hierarchy_level === hierarchyLevel)
       .sort((a, b) => a.start_date - b.start_date);
-
+    const spaceForLabels = 25;
+    const eventHeight = this.rect_height + spaceForLabels;
     return levelData.reduce((acc, d, i) => {
-      let y = 180;
+      let y = this.axis_y - this.level_height;
       if (i > 0) {
         const prevData = acc[i - 1];
         const isOverlap = prevData.end_date > d.start_date;
-        y = isOverlap ? prevData.y - 40 : y;
+        y = isOverlap ? prevData.y - eventHeight : y;
       }
       const newObj = {
         ...d,
